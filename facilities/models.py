@@ -7,5 +7,9 @@ class Facility(models.Model):
     password = models.CharField(max_length=100)
     ip_address = models.CharField(max_length=100)
 
+    class Meta:
+       managed = True
+       db_table = 'facilities'
+
     def __str__(self) -> str:
         return super().__str__()

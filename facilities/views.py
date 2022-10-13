@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from facilities.models import Facility
-from encounters.views import RemoteEncounters
+# from encounters.views import RemoteEncounters
 from facilities.serializer import FacilitySerializer
 from rest_framework.views import APIView 
 from rest_framework.response import Response
@@ -15,17 +15,21 @@ class FacilityList(APIView):
     
 class FacilityCreate(APIView):
     def post(self,request):
-        serializer = FacilitySerializer(data=request.data)
+        try:
+            data = request.data  
+        except AttributeError:
+            data = request
+        serializer = FacilitySerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
-class SiteCreate(APIView):
-    def post(self,request):
-        remote = RemoteEncounters()
-        remote.get_remote_encouters(request.data)
+# class SiteCreate(APIView):
+#     def post(self,request):
+#         remote = RemoteEncounters()
+#         remote.get_remote_encouters(request.data)
         
             
 
