@@ -24,13 +24,7 @@ class FacilityCreate(APIView):
             serializer.save()
             return Response(serializer.data)
         else:
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
-# class SiteCreate(APIView):
-#     def post(self,request):
-#         remote = RemoteEncounters()
-#         remote.get_remote_encouters(request.data)
-        
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)    
             
 
 class FacilityDetail(APIView):
