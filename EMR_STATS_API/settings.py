@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'facilities',
     'encounters',
     'rest_framework',
-    'django_crontab'
+    'django_crontab',
+    "corsheaders"
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware"
 ]
 
 ROOT_URLCONF = 'EMR_STATS_API.urls'
@@ -140,3 +143,22 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRONJOBS = [
     ('*/1 * * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'cronjob.log' + ' 2>&1 '))
 ]
+CORS_ALLOW_ALL_ORIGINS=True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+]
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+    }
+}

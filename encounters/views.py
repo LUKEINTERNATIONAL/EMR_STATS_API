@@ -1,3 +1,6 @@
+import re
+
+from django.http import JsonResponse
 from remote_operations import remote_operations
 from encounters.serializer import EncontersSerializer
 from rest_framework.response import Response
@@ -9,6 +12,11 @@ from facilities.views import FacilityCreate
 from facilities.models import Facility
 from encounters.models import Enconters
 from django.db import connection
+from service import ApplicationService
+from rest_framework import serializers
+import json
+import logging
+import os
 
 class EcounterCreate(APIView):
     def post(self,request):
@@ -40,50 +48,85 @@ class RemoteEncounters:
     def create_encounter(self,facility_id,result):
         ecounter_data = { 
             "facility" : facility_id,
-            "program_name" : result[1],
-            "total_encounters" : result[2],
+            "program_name" : result[0],
+            "total_encounters" : result[1],
             "encounter_date" : datetime.today().strftime('%Y-%m-%d')
         }
         encounter = EcounterCreate()
         encounter.post(ecounter_data)
 
     def update_encounter(self,result):
-        em = Enconters.objects.get(program_name=result[1], encounter_date = datetime.today().strftime('%Y-%m-%d'))
-        em.total_encounters = result[2]
+        em = Enconters.objects.get(program_name=result[0], encounter_date = datetime.today().strftime('%Y-%m-%d'))
+        em.total_encounters = result[1]
         em.save()
 
     def get_remote_encouters(self,facility_details,encounter_status):
         remote = remote_operations()
         client = remote.connect(facility_details['ip_address'],facility_details['user_name'],facility_details['password'])
-        file = remote.open_remote_file(client, "/var/www/BHT-EMR-API/config/database.yml")
-        try:
-            data = yaml.safe_load(file)
-            query = '''SELECT (SELECT property_value FROM openmrs_likuni.global_property 
-                    where property ='current_health_center_name') as facility_name, 
-                    p.name as program_name, count(*) as total_encounters FROM openmrs_likuni.encounter e 
-                    INNER JOIN program p on p.program_id = e.program_id group by e.program_id;'''
+        if(client):
+            file = remote.open_remote_file(client, "/var/www/BHT-EMR-API/config/database.yml")
+            try:
+                data = yaml.safe_load(file)
+             
+                facility_query = '''"SELECT property_value as facility_name FROM global_property where property =\'current_health_center_name\';"'''
+                encounter_query = '''"SELECT p.name as program_name, count(*) as total_encounters FROM encounter e 
+                                    INNER JOIN program p on p.program_id = e.program_id 
+                                     group by e.program_id;"'''
 
-            results = remote.connect_db(data['default']['username'],data['default']['password'],data['development']['database'],query)
+                encounter_results = remote.execute_query(data['default']['username'],data['default']['password'] ,data['development']['database'], client, encounter_query)
+                facility_results = remote.execute_query(data['default']['username'],data['default']['password'] ,data['development']['database'], client, facility_query)
 
-            if(not Facility.objects.filter(facility_name=results[0][0]).exists()):
-                facility_id = self.create_facilitly(results[0][0],facility_details)
-            else:
-                fm = Facility.objects.get(facility_name=results[0][0])
-                facility_id = fm.id
-       
-            for result in results:
-                if(encounter_status == 'create'):
-                    self.create_encounter(facility_id,result)
-                if(encounter_status == 'update'):
-                    self.update_encounter(result)
-        except yaml.YAMLError as exc:
-            print(exc)
+            
+                print(encounter_results)
+                print(facility_results)
+
+                if facility_results:
+                    facility_results = facility_results[1].rstrip('\n')
+                    try:
+                        exisiting_facility = Facility.objects.get(facility_name=facility_results)
+                    except Facility.DoesNotExist:
+                        exisiting_facility =False
+                else:
+                    return print("can not find remote facility")
+
+                if exisiting_facility:
+                    facility_id = exisiting_facility.id
+                else:
+                    facility_id = self.create_facilitly(facility_results,facility_details)
+
+                if encounter_results:
+                    del encounter_results[0]
+                    for result in encounter_results:
+                        result = result.rstrip('\n').split('\t')
+                        print(result)
+                        if(encounter_status == 'create'):
+                            self.create_encounter(facility_id,result)
+                        if(encounter_status == 'update'):
+                            self.update_encounter(result)
+                else:
+                    print("Encounters not found")
+            except yaml.YAMLError as exc:
+                print(exc)
+        else:
+            print("fail to connect")
 
             
 class SiteCreate(APIView):
     def post(self,request):
         remote = RemoteEncounters()
         return Response(remote.get_remote_encouters(request.data,'create'))
+
+class EncounterList(APIView):
+    def get(self,request):
+        service = ApplicationService()
+        # query ='''SELECT * FROM encounters e INNER JOIN facilities f on f.id = e.facility_id 
+        # WHERE encounter_date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))
+
+        query ='''SELECT * FROM encounters e INNER JOIN facilities f on f.id = e.facility_id; '''
+        results = service.query_processor(query)
+        return JsonResponse({
+            'facilities':results
+        })
 
 class EncouterDetails(APIView):
     def query_processor(self,query):
@@ -111,7 +154,6 @@ class EncouterDetails(APIView):
                 remote.get_remote_encouters(facility_data,'create')
                 
 
-    
     def get_facility_by_pk(self,pk):
         try:
             return Enconters.objects.get(pk=pk)
