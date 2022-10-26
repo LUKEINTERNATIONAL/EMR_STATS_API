@@ -26,16 +26,16 @@ class remote_operations:
         (stdin, stdout, stderr) = ssh_client.exec_command(command)
         return stdout.readlines()
 
-    def connect_db(self,user,passwd,db,hostname,query):
-        config = {
-            'user': user,
-            'password': passwd,
-            'host': hostname,
-            'database': db,
-            'raise_on_warnings': True
-        }
-        conn = mysql.connector.connect(**config)
-        cur =conn.cursor()
-        cur.execute(query)
-        results = cur.fetchall()
-        return results
+    # def connect_db(self,user,passwd,db,hostname,query):
+    #     config = {
+    #         'user': user,
+    #         'password': passwd,
+    #         'host': hostname,
+    #         'database': db,
+    #         'raise_on_warnings': True
+    #     }
+    #     conn = mysql.connector.connect(**config)
+    #     cur =conn.cursor()
+    #     cur.execute(query)
+    #     results = cur.fetchall()
+    #     return results

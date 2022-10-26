@@ -69,9 +69,10 @@ class RemoteEncounters:
                 data = yaml.safe_load(file)
              
                 facility_query = '''"SELECT property_value as facility_name FROM global_property where property =\'current_health_center_name\';"'''
+               
                 encounter_query = '''"SELECT p.name as program_name, count(*) as total_encounters FROM encounter e 
-                                    INNER JOIN program p on p.program_id = e.program_id 
-                                     group by e.program_id;"'''
+                        INNER JOIN program p on p.program_id = e.program_id WHERE DATE(e.date_created) = '{}' 
+                        group by e.program_id;"'''.format(datetime.today().strftime('%Y-%m-%d'))
 
                 encounter_results = remote.execute_query(data['default']['username'],data['default']['password'] ,data['development']['database'], client, encounter_query)
                 facility_results = remote.execute_query(data['default']['username'],data['default']['password'] ,data['development']['database'], client, facility_query)
@@ -119,10 +120,8 @@ class SiteCreate(APIView):
 class EncounterList(APIView):
     def get(self,request):
         service = ApplicationService()
-        # query ='''SELECT * FROM encounters e INNER JOIN facilities f on f.id = e.facility_id 
-        # WHERE encounter_date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))
-
-        query ='''SELECT * FROM encounters e INNER JOIN facilities f on f.id = e.facility_id; '''
+        query ='''SELECT * FROM encounters e INNER JOIN facilities f on f.id = e.facility_id 
+        WHERE encounter_date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))
         results = service.query_processor(query)
         return JsonResponse({
             'facilities':results

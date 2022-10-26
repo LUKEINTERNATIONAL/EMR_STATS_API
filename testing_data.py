@@ -8,7 +8,7 @@
     "password": "lin@1088",
     "ip_address": "192.168.11.190"
 }
-
+client = remote.connect("192.168.1.137","petros","#p525263#")
 # SELECT DISTINCT(facility_id), MAX(encounter_date), f.password, f.user_name, f.ip_address FROM encounters e INNER JOIN facilities f on f.id = e.facility_id GROUP BY e.facility_id, f.password, f.user_name, f.ip_address
 
 # def query_processor(self,query):
