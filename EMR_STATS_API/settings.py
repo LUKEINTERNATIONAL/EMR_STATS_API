@@ -94,7 +94,7 @@ DATABASES = {
         'NAME': 'emr_stats',
         'USER': 'postgres',
         'PASSWORD': 'root',
-        'HOST': 'localhost',
+        'HOST': 'db',
         'PORT': 5432
     }
 }
