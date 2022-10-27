@@ -1,0 +1,9 @@
+django-crontab
+django
+djangorestframework
+django-cors-headers
+psycopg2
+paramiko
+mysql
+mysql-connector
+PyYAML
