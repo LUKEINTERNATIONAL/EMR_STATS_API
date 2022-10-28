@@ -22,8 +22,8 @@ class remote_operations:
 
     def execute_query(self,user,passwd ,db, ssh_client, query):
         command = '''mysql -u{} -p{} {} -e {}'''.format(user,passwd,db,query)
-        print(command)
         (stdin, stdout, stderr) = ssh_client.exec_command(command)
+        print("The query was successful")
         return stdout.readlines()
 
     # def connect_db(self,user,passwd,db,hostname,query):

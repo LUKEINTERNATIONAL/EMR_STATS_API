@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
-from encounters.views import EcounterCreate, SiteCreate, EncounterList
+from encounters.views import SiteCreate, EncounterList
+from encounters.create_encouter import EcounterCreate
 
 urlpatterns = [
     path('',EcounterCreate.as_view()),
