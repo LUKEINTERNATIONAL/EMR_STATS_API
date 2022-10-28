@@ -2,8 +2,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView 
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import redirect
 import logging
 
 from user.serializer import LoginRequestSerializer, RegisterRequestSerializer
@@ -29,7 +30,9 @@ class UserLogin(APIView):
             return Response({"status": "Fail to login"}, status=status.HTTP_401_UNAUTHORIZED)
         
         request.session["login"] = True
-        request.session["username"] = data["username"]
+        request.session["username"] = user.get_username()
+        request.session["is_staff"] = user.is_staff
+        request.session["is_superuser"] = user.is_superuser
 
         logging.info(f"login seccess: {data['username']}")
         return Response({"status": "OK"})
@@ -43,6 +46,13 @@ class UserTest(APIView):
 
 class UserRegister(APIView):
     def post(self,request):
+        if "login" not in request.session:
+            return Response({"status": "You are not privileged"}, status=status.HTTP_403_FORBIDDEN)
+        elif request.session["login"] == False:
+            return Response({"status": "You are not privileged"}, status=status.HTTP_403_FORBIDDEN)
+        elif request.session["is_staff"] == False:
+            return Response({"status": "You are not privileged"}, status=status.HTTP_403_FORBIDDEN)
+
         try:
             data = request.data  
         except AttributeError:
@@ -77,4 +87,21 @@ class UserLogout(APIView):
     def get(self,request):
         request.session["username"] = None
         request.session["login"] = False
-        return Response({"status": "OK"})
+        request.session["is_staff"] = False
+        request.session["is_superuser"] = False
+        return redirect("/")
+
+class UserList(APIView):
+    def get(self,request):
+        if "login" not in request.session:
+            return Response({"status": "Denied"}, status=status.HTTP_403_FORBIDDEN)
+        elif request.session["login"] == False:
+            return Response({"status": "Denied"}, status=status.HTTP_403_FORBIDDEN)
+        
+        users = get_user_model().objects.all()
+        result = []
+        for user in users:
+            result.append({"username": user.username, "email": user.email, "is_staff": user.is_staff, 
+                            "is_superuser": user.is_superuser})
+
+        return Response(result)

@@ -26,7 +26,9 @@ SECRET_KEY = 'django-insecure-j9xy3u+os)508jhy+)258lg&!$o08hnodpc89#1!$rmd3$bdbw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "backend"
+]
 
 
 # Application definition
@@ -143,10 +145,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRONJOBS = [
     ('*/1 * * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'cronjob.log' + ' 2>&1 '))
 ]
-CORS_ALLOW_ALL_ORIGINS=True
+CORS_ALLOW_ALL_ORIGINS=False
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",
+    "http://localhost:8080"
 ]
 
 LOGGING = {
