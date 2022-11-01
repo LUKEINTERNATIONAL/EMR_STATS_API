@@ -7,6 +7,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
 import logging
 
+from user.serializer import LoginRequestSerializer, RegisterRequestSerializer
+
 logging.basicConfig(level=logging.INFO)
 
 class UserLogin(APIView):

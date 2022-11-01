@@ -26,6 +26,11 @@ class SiteCreate(APIView):
 
 class EncounterList(APIView):
     def get(self,request):
+        if "login" not in request.session:
+            return Response({"status": "Denied"}, status=status.HTTP_403_FORBIDDEN)
+        elif request.session["login"] == False:
+            return Response({"status": "Denied"}, status=status.HTTP_403_FORBIDDEN)
+
         service = ApplicationService()
         query ='''SELECT * FROM encounters e INNER JOIN facilities f on f.id = e.facility_id 
         WHERE encounter_date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))

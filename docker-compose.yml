@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  backend:
+    build: ./
+    volumes:
+      - ./:/app
+    # ports:
+    #   - "10105:8000"
+    depends_on:
+      - db
+  frontend:
+    image: httpd
+    volumes:
+      - /Users/chris/Documents/tmp/facility_query/EMR-Monitor:/usr/local/apache2/htdocs/
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: emr_stats
+      POSTGRES_USER: postgres
+  nginx:
+    image: nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  db-data:
+    driver: local

@@ -9,6 +9,11 @@ from rest_framework import status
 # Create your views here.
 class FacilityList(APIView):
     def get(self,request):
+        if "login" not in request.session:
+            return Response({"status": "Denied"}, status=status.HTTP_403_FORBIDDEN)
+        elif request.session["login"] == False:
+            return Response({"status": "Denied"}, status=status.HTTP_403_FORBIDDEN)
+
         facility = Facility.objects.all()
         serializer = FacilitySerializer(facility, many=True)
         return Response(serializer.data) 
