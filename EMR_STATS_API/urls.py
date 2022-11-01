@@ -22,5 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('facilities/', include('facilities.urls')),
     path('encounters/', include('encounters.urls')),
+    path('vpn/', include('vpn.urls'))
     path('user/', include('user.urls'))
 ]

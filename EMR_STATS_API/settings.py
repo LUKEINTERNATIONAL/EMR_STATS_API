@@ -42,9 +42,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'facilities',
     'encounters',
+    'vpn',
     'rest_framework',
     'django_crontab',
-    "corsheaders"
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
