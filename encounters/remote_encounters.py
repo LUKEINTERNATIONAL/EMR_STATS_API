@@ -110,14 +110,10 @@ class RemoteEncounters:
                     print("Encounters not found")
             except yaml.YAMLError as exc:
                 print(exc)
-        else:
-            try:
-                self.vpn_processor(facility_details[id],"inactive")
-                print("vpn inactive")
-            except yaml.YAMLError as exc:
-                print(exc)
-
-            print("fail to connect")
+        elif id in facility_details:
+            self.vpn_processor(facility_details[id],"inactive")
+            print("vpn inactive")
+           
 
 
 
