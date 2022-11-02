@@ -29,7 +29,8 @@ class VPNCreate(APIView):
 class VPNList(APIView):
     def get(self,request):
         service = ApplicationService()
-        query ='''SELECT * FROM vpn v INNER JOIN facilities f on f.id = v.facility_id ; '''
+        query ='''SELECT * FROM vpn v INNER JOIN facilities f on f.id = v.facility_id 
+        WHERE date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))
         results = service.query_processor(query)
         return JsonResponse({
             'vpn':results

@@ -144,7 +144,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRONJOBS = [
-    ('*/1 * * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'cronjob.log' + ' 2>&1 '))
+    ('*/5 * * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'cronjob.log' + ' 2>&1 '))
 ]
 CORS_ALLOW_ALL_ORIGINS=False
 

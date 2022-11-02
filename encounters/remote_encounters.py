@@ -97,8 +97,11 @@ class RemoteEncounters:
                     del encounter_results[0]
                     for result in encounter_results:
                         result = result.rstrip('\n').split('\t')
+                        try:
+                            encounter_exist = Enconters.objects.get(program_name=result[0], encounter_date = datetime.today().strftime('%Y-%m-%d'),facility_id =facility_id)
+                        except Enconters.DoesNotExist:
+                            encounter_exist =False
 
-                        encounter_exist = Enconters.objects.get(program_name=result[0], encounter_date = datetime.today().strftime('%Y-%m-%d'),facility_id =facility_id)
                         if(encounter_exist):
                             self.update_encounter(result,encounter_exist)
                         else:
