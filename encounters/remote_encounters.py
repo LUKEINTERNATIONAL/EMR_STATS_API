@@ -97,8 +97,11 @@ class RemoteEncounters:
                     del encounter_results[0]
                     for result in encounter_results:
                         result = result.rstrip('\n').split('\t')
+                        try:
+                            encounter_exist = Enconters.objects.get(program_name=result[0], encounter_date = datetime.today().strftime('%Y-%m-%d'),facility_id =facility_id)
+                        except Enconters.DoesNotExist:
+                            encounter_exist =False
 
-                        encounter_exist = Enconters.objects.get(program_name=result[0], encounter_date = datetime.today().strftime('%Y-%m-%d'),facility_id =facility_id)
                         if(encounter_exist):
                             self.update_encounter(result,encounter_exist)
                         else:
@@ -107,14 +110,10 @@ class RemoteEncounters:
                     print("Encounters not found")
             except yaml.YAMLError as exc:
                 print(exc)
-        else:
-            try:
-                self.vpn_processor(facility_details[id],"inactive")
-                print("vpn inactive")
-            except yaml.YAMLError as exc:
-                print(exc)
-
-            print("fail to connect")
+        elif id in facility_details:
+            self.vpn_processor(facility_details[id],"inactive")
+            print("vpn inactive")
+           
 
 
 

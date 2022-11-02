@@ -5,6 +5,10 @@ from facilities.serializer import FacilitySerializer
 from rest_framework.views import APIView 
 from rest_framework.response import Response
 from rest_framework import status
+from service import ApplicationService
+from datetime import datetime
+from django.http import JsonResponse
+
 
 # Create your views here.
 class FacilityList(APIView):
@@ -14,9 +18,13 @@ class FacilityList(APIView):
         elif request.session["login"] == False:
             return Response({"status": "Denied"}, status=status.HTTP_403_FORBIDDEN)
 
-        facility = Facility.objects.all()
-        serializer = FacilitySerializer(facility, many=True)
-        return Response(serializer.data) 
+        service = ApplicationService()
+        query ='''SELECT * FROM vpn v INNER JOIN facilities f on f.id = v.facility_id 
+        WHERE date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))
+        results = service.query_processor(query)
+        return JsonResponse({
+            'facilities':results
+        })
     
 class FacilityCreate(APIView):
     def post(self,request):
