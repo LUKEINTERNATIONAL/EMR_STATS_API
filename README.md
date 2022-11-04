@@ -5,3 +5,8 @@ first time you run the docker:
     python3 manage.py makemigrations
     python3 manage.py migrate
     python3 manage.py createsuperuser
+
+in server:
+    make start
+    make stop
+    make restart SERVICE=[backend/frontend/nginx/db]

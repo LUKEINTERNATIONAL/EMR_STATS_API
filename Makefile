@@ -15,3 +15,12 @@ push:
 	scp /tmp/backend.tar $(USERNAME)@$(SERVER_ADDR):~/
 	ssh $(USERNAME)@$(SERVER_ADDR) docker load -i /home/$(USERNAME)/backend.tar
 	rm /tmp/backend.tar
+
+start:
+	docker-compose -f docker-compose-server.yml up -d
+
+stop:
+	docker-compose -f docker-compose-server.yml down
+
+restart:
+	docker-compose -f docker-compose-server.yml restart $(SERVICE)

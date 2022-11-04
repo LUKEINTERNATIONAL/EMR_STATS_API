@@ -2,7 +2,7 @@ version: "3"
 
 services:
   backend:
-    build: ./
+    image: emr_stats_api_backend:x86
     volumes:
       - ./:/app
     # ports:
@@ -12,7 +12,7 @@ services:
   frontend:
     image: httpd
     volumes:
-      - ../EMR-Monitor:/usr/local/apache2/htdocs/
+      - /var/www/EMR-Monitor:/usr/local/apache2/htdocs/
   db:
     image: postgres
     restart: always
