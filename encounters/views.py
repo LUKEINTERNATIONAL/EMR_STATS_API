@@ -21,6 +21,13 @@ from encounters.remote_encounters import RemoteEncounters
            
 class SiteCreate(APIView):
     def post(self,request):
+        if "login" not in request.session:
+            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
+        elif request.session["login"] == False:
+            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
+        elif request.session["is_staff"] == False:
+            return Response({"status": "You are not privileged"}, status=status.HTTP_401_UNAUTHORIZED)
+        
         remote = RemoteEncounters()
         return Response(remote.get_remote_encouters(request.data))
 
@@ -93,13 +100,3 @@ class EncouterDetails(APIView):
         facility = self.get_facility_by_pk(pk)
         facility.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-          
-
-
-
-       
-
-    
-
-

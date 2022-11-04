@@ -14,13 +14,13 @@ from django.http import JsonResponse
 class FacilityList(APIView):
     def get(self,request):
         if "login" not in request.session:
-            return Response({"status": "Denied"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
         elif request.session["login"] == False:
-            return Response({"status": "Denied"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
 
         service = ApplicationService()
-        query ='''SELECT * FROM vpn v INNER JOIN facilities f on f.id = v.facility_id 
-        WHERE date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))
+        query ='''SELECT * FROM vpn v INNER JOIN facilities f on f.id = v.facility_id
+         WHERE date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))
         results = service.query_processor(query)
         return JsonResponse({
             'facilities':results
@@ -45,17 +45,37 @@ class FacilityDetail(APIView):
         try:
             return Facility.objects.get(pk=pk)
         except:
-            return Response({
-                'error': 'Book does not exist'
-            }, status=status.HTTP_404_NOT_FOUND)
+            return False
  
     def get(self,request,pk):
+        if "login" not in request.session:
+            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
+        elif request.session["login"] == False:
+            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
+        
         facility = self.get_facility_by_pk(pk)
+        if facility == False:
+            return Response({
+                'error': 'Facility not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
         serializer = FacilitySerializer(facility)
         return Response(serializer.data)
 
     def put(self,request,pk):
+        if "login" not in request.session:
+            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
+        elif request.session["login"] == False:
+            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
+        elif request.session["is_staff"] == False:
+            return Response({"status": "You are not privileged"}, status=status.HTTP_401_UNAUTHORIZED)
+        
         facility = self.get_facility_by_pk(pk)
+        if facility == False:
+            return Response({
+                'error': 'Facility not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
         serializer = FacilitySerializer(facility, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -63,6 +83,18 @@ class FacilityDetail(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self,request,pk):
+        if "login" not in request.session:
+            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
+        elif request.session["login"] == False:
+            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
+        elif request.session["is_staff"] == False:
+            return Response({"status": "You are not privileged"}, status=status.HTTP_401_UNAUTHORIZED)
+        
         facility = self.get_facility_by_pk(pk)
+        if facility == False:
+            return Response({
+                'error': 'Facility not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
         facility.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
