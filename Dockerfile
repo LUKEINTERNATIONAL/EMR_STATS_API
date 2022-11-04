@@ -1,7 +1,6 @@
 FROM python:latest
 
-RUN apt update
-RUN apt install -y cron
+RUN apt update && apt install -y cron
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
