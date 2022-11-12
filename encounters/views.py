@@ -18,26 +18,21 @@ import json
 import logging
 import os
 from encounters.remote_encounters import RemoteEncounters
+from rest_framework import authentication, permissions
            
 class SiteCreate(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
     def post(self,request):
-        if "login" not in request.session:
-            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
-        elif request.session["login"] == False:
-            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
-        elif request.session["is_staff"] == False:
-            return Response({"status": "You are not privileged"}, status=status.HTTP_401_UNAUTHORIZED)
-        
         remote = RemoteEncounters()
         return Response(remote.get_remote_encouters(request.data))
 
 class EncounterList(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
     def get(self,request):
-        if "login" not in request.session:
-            return Response({"status": "Denied"}, status=status.HTTP_403_FORBIDDEN)
-        elif request.session["login"] == False:
-            return Response({"status": "Denied"}, status=status.HTTP_403_FORBIDDEN)
-
         service = ApplicationService()
         query ='''SELECT * FROM encounters e INNER JOIN facilities f on f.id = e.facility_id 
         WHERE encounter_date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))
@@ -47,6 +42,9 @@ class EncounterList(APIView):
         })
 
 class EncouterDetails(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
     def query_processor(self,query):
         cursor = connection.cursor()
         cursor.execute(query)
@@ -67,12 +65,12 @@ class EncouterDetails(APIView):
             "ip_address" : facilities[count].facility.ip_address
             }
             remote = RemoteEncounters()
-            if(item['encounter_date'] == datetime.today().strftime('%Y-%m-%d')):
-                print('updating encounter data')
-                remote.get_remote_encouters(facility_data)
-            else:
-                print('create encounter data')
-                remote.get_remote_encouters(facility_data)
+            # if(item['encounter_date'] == datetime.today().strftime('%Y-%m-%d')):
+            #     print('updating encounter data')
+            #     remote.get_remote_encouters(facility_data)
+            # else:
+            print('process_all_facilities')
+            remote.get_remote_encouters(facility_data)
                 
 
     def get_facility_by_pk(self,pk):

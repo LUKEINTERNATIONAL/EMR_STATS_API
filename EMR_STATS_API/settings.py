@@ -26,9 +26,7 @@ SECRET_KEY = 'django-insecure-j9xy3u+os)508jhy+)258lg&!$o08hnodpc89#1!$rmd3$bdbw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "backend"
-]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -42,13 +40,19 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'facilities',
     'encounters',
+    'reports',
     'vpn',
     'rest_framework',
     'django_crontab',
-    'corsheaders'
+    'corsheaders',
+    'users.apps.UsersConfig',
+    'rest_framework.authtoken',
+    
+    
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -56,7 +60,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware"
 ]
 
@@ -97,7 +100,7 @@ DATABASES = {
         'NAME': 'emr_stats',
         'USER': 'postgres',
         'PASSWORD': 'root',
-        'HOST': 'db',
+        'HOST': 'localhost',
         'PORT': 5432
     }
 }
@@ -146,12 +149,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRONJOBS = [
     ('*/5 * * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'cronjob.log' + ' 2>&1 '))
 ]
-CORS_ALLOW_ALL_ORIGINS=False
+CORS_ALLOW_ALL_ORIGINS=True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080"
+    "http://localhost:8000"
 ]
-
+CORS_ALLOW_HEADERS = ('content-disposition', 'accept-encoding',
+                      'content-type', 'accept', 'origin', 'authorization')
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

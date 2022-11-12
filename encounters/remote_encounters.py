@@ -62,6 +62,7 @@ class RemoteEncounters:
         remote = remote_operations()
         client = remote.connect(facility_details['ip_address'],facility_details['user_name'],facility_details['password'])
         if(client):
+            print("Client connection successful")
             file = remote.open_remote_file(client, "/var/www/BHT-EMR-API/config/database.yml")
             try:
                 data = yaml.safe_load(file)
@@ -110,8 +111,8 @@ class RemoteEncounters:
                     print("Encounters not found")
             except yaml.YAMLError as exc:
                 print(exc)
-        elif id in facility_details:
-            self.vpn_processor(facility_details[id],"inactive")
+        elif "id" in facility_details:
+            self.vpn_processor(facility_details["id"],"inactive")
             print("vpn inactive")
            
 

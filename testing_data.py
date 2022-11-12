@@ -3,7 +3,8 @@
     "password" : "#p525263#",
     "ip_address" : "192.168.1.137"
 }
-{
+facility_details ={
+    "id":40,
     "user_name": "emruser",
     "password": "lin@1088",
     "ip_address": "192.168.11.190"
