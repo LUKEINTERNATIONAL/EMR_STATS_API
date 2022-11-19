@@ -6,6 +6,8 @@ class Facility(models.Model):
     user_name = models.CharField(max_length=100)
     password = models.CharField(max_length=100)
     ip_address = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
        managed = True

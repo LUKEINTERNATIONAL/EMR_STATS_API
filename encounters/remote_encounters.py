@@ -27,6 +27,7 @@ class RemoteEncounters:
             "facility" : facility_id,
             "program_name" : result[0],
             "total_encounters" : result[1],
+            "total_patients": result[2],
             "encounter_date" : datetime.today().strftime('%Y-%m-%d')
         }
         encounter = EcounterCreate()
@@ -34,6 +35,7 @@ class RemoteEncounters:
 
     def update_encounter(self,result,em):
         em.total_encounters = result[1]
+        em.total_patients = result[2]
         em.save()
 
     def vpn_processor(self,facility_id,status):
@@ -69,9 +71,11 @@ class RemoteEncounters:
              
                 facility_query = '''"SELECT property_value as facility_name FROM global_property where property =\'current_health_center_name\';"'''
                
-                encounter_query = '''"SELECT p.name as program_name, count(*) as total_encounters FROM encounter e 
-                        INNER JOIN program p on p.program_id = e.program_id WHERE DATE(e.date_created) = '{}' 
-                        group by e.program_id;"'''.format(datetime.today().strftime('%Y-%m-%d'))
+                encounter_query = '''"SELECT p.name as program_name, count(*) as total_encounters,
+                count(distinct(patient_id)) as total_patients FROM encounter e 
+                INNER JOIN program p on p.program_id = e.program_id 
+                WHERE DATE(e.date_created) = '{}' 
+                group by e.program_id;"'''.format(datetime.today().strftime('%Y-%m-%d'))
 
                 encounter_results = remote.execute_query(data['default']['username'],data['default']['password'] ,data['development']['database'], client, encounter_query)
                 facility_results = remote.execute_query(data['default']['username'],data['default']['password'] ,data['development']['database'], client, facility_query)

@@ -25,6 +25,7 @@ urlpatterns = [
     path('encounters/', include('encounters.urls')),
     path('users/', include('users.urls')),
     path('reports/', include('reports.urls')),
+    path('databases/', include('databases.urls')),
     path('vpn/', include('vpn.urls')),
     path('login/', obtain_auth_token)
     

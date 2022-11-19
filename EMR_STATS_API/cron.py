@@ -1,4 +1,5 @@
 from encounters.views import EncouterDetails
+from databases.views import DatabaseDetails
 from datetime import datetime
 
 def my_scheduled_job():
@@ -12,3 +13,7 @@ def my_scheduled_job():
     print("End processing data")
     print(datetime.now())
     print("**************************************")
+
+def database_sync_job():
+    database = DatabaseDetails()
+    database.process_all_databases()
