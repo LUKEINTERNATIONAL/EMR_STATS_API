@@ -1,5 +1,5 @@
 import re
-
+from remote_operations import remote_operations
 from django.http import JsonResponse
 from databases.serializer import DatabasesSerializer
 from rest_framework.response import Response
@@ -49,13 +49,15 @@ class DatabaseDetails(APIView):
     def process_all_databases(self):
         database = Databases.objects.all()
         for count,item in enumerate(database.values()):
-            process = subprocess.Popen(["pt-table-sync","--verbose","--database",item["database_name"],"--execute",\
-                                    "h={},u={},p={}".format(item["server_ip_address"],item["database_username"],item["database_password"]),\
-                                    "h=127.0.0.1,u=root,p=root","--noforeign-key-checks",\
-                                    "--nocheck-child-tables"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            result = process.communicate()
-            for rs in result:
-                print(rs)
+            remote = remote_operations()
+            if remote.ping(item["server_ip_address"]):
+                process = subprocess.Popen(["pt-table-sync","--verbose","--database",item["database_name"],"--execute",\
+                                        "h={},u={},p={}".format(item["server_ip_address"],item["database_username"],item["database_password"]),\
+                                        "h=127.0.0.1,u=root,p=root","--noforeign-key-checks",\
+                                        "--nocheck-child-tables"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                result = process.communicate()
+                for rs in result:
+                    print(rs)
         # print(database.values_list())
         # for count,item in enumerate(database.values()):
         #     print(item)

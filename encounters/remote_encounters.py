@@ -8,7 +8,7 @@ from facilities.models import Facility
 from encounters.models import Enconters
 from vpn.models import VPN
 from vpn import views
-
+import os
 from encounters.create_encouter import EcounterCreate
 
 class RemoteEncounters:
@@ -59,65 +59,68 @@ class RemoteEncounters:
             vpn = views.VPNCreate()
             vpn.post(vpn_data)
             print("vpn status created")
-
+            
+   
     def get_remote_encouters(self,facility_details):
         remote = remote_operations()
-        client = remote.connect(facility_details['ip_address'],facility_details['user_name'],facility_details['password'])
-        if(client):
-            print("Client connection successful")
-            file = remote.open_remote_file(client, "/var/www/BHT-EMR-API/config/database.yml")
-            try:
-                data = yaml.safe_load(file)
-             
-                facility_query = '''"SELECT property_value as facility_name FROM global_property where property =\'current_health_center_name\';"'''
-               
-                encounter_query = '''"SELECT p.name as program_name, count(*) as total_encounters,
-                count(distinct(patient_id)) as total_patients FROM encounter e 
-                INNER JOIN program p on p.program_id = e.program_id 
-                WHERE DATE(e.date_created) = '{}' 
-                group by e.program_id;"'''.format(datetime.today().strftime('%Y-%m-%d'))
-
-                encounter_results = remote.execute_query(data['default']['username'],data['default']['password'] ,data['development']['database'], client, encounter_query)
-                facility_results = remote.execute_query(data['default']['username'],data['default']['password'] ,data['development']['database'], client, facility_query)
+        if remote.ping(facility_details['ip_address']):
+            client = remote.connect(facility_details['ip_address'],facility_details['user_name'],facility_details['password'])
+            if(client):
+                print("Client connection successful")
+                file = remote.open_remote_file(client, "/var/www/BHT-EMR-API/config/database.yml")
+                try:
+                    data = yaml.safe_load(file)
                 
-                if facility_results:
-                    facility_results = facility_results[1].rstrip('\n')
-                    try:
-                        exisiting_facility = Facility.objects.get(facility_name=facility_results)
-                    except Facility.DoesNotExist:
-                        exisiting_facility =False
-                else:
-                    return print("can not find remote facility")
-
-                if exisiting_facility:
-                    facility_id = exisiting_facility.id
-                else:
-                    facility_id = self.create_facilitly(facility_results,facility_details)
+                    facility_query = '''"SELECT property_value as facility_name FROM global_property where property =\'current_health_center_name\';"'''
                 
-                print("####### Start vpn #######")
-                self.vpn_processor(facility_id,"active")
-                
+                    encounter_query = '''"SELECT p.name as program_name, count(*) as total_encounters,
+                    count(distinct(patient_id)) as total_patients FROM encounter e 
+                    INNER JOIN program p on p.program_id = e.program_id 
+                    WHERE DATE(e.date_created) = '{}' 
+                    group by e.program_id;"'''.format(datetime.today().strftime('%Y-%m-%d'))
 
-                if encounter_results:
-                    del encounter_results[0]
-                    for result in encounter_results:
-                        result = result.rstrip('\n').split('\t')
+                    encounter_results = remote.execute_query(data['default']['username'],data['default']['password'] ,data['development']['database'], client, encounter_query)
+                    facility_results = remote.execute_query(data['default']['username'],data['default']['password'] ,data['development']['database'], client, facility_query)
+                    
+                    if facility_results:
+                        facility_results = facility_results[1].rstrip('\n')
                         try:
-                            encounter_exist = Enconters.objects.get(program_name=result[0], encounter_date = datetime.today().strftime('%Y-%m-%d'),facility_id =facility_id)
-                        except Enconters.DoesNotExist:
-                            encounter_exist =False
+                            exisiting_facility = Facility.objects.get(facility_name=facility_results)
+                        except Facility.DoesNotExist:
+                            exisiting_facility =False
+                    else:
+                        return print("can not find remote facility")
 
-                        if(encounter_exist):
-                            self.update_encounter(result,encounter_exist)
-                        else:
-                            self.create_encounter(facility_id,result)
-                else:
-                    print("Encounters not found")
-            except yaml.YAMLError as exc:
-                print(exc)
+                    if exisiting_facility:
+                        facility_id = exisiting_facility.id
+                    else:
+                        facility_id = self.create_facilitly(facility_results,facility_details)
+                    
+                    print("####### Start vpn #######")
+                    self.vpn_processor(facility_id,"active")
+                    
+
+                    if encounter_results:
+                        del encounter_results[0]
+                        for result in encounter_results:
+                            result = result.rstrip('\n').split('\t')
+                            try:
+                                encounter_exist = Enconters.objects.get(program_name=result[0], encounter_date = datetime.today().strftime('%Y-%m-%d'),facility_id =facility_id)
+                            except Enconters.DoesNotExist:
+                                encounter_exist =False
+
+                            if(encounter_exist):
+                                self.update_encounter(result,encounter_exist)
+                            else:
+                                self.create_encounter(facility_id,result)
+                    else:
+                        print("Encounters not found")
+                except yaml.YAMLError as exc:
+                    print(exc)
+            else:
+                print("Failed to login to  a remote server")
         elif "id" in facility_details:
-            self.vpn_processor(facility_details["id"],"inactive")
-            print("vpn inactive")
+                self.vpn_processor(facility_details["id"],"inactive")
            
 
 

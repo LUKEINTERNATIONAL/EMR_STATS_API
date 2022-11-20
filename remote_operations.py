@@ -1,5 +1,6 @@
 import paramiko
 import mysql.connector
+import os
 
 class remote_operations:
     def __init__(self):
@@ -25,17 +26,14 @@ class remote_operations:
         (stdin, stdout, stderr) = ssh_client.exec_command(command)
         print("The query was successful")
         return stdout.readlines()
-
-    # def connect_db(self,user,passwd,db,hostname,query):
-    #     config = {
-    #         'user': user,
-    #         'password': passwd,
-    #         'host': hostname,
-    #         'database': db,
-    #         'raise_on_warnings': True
-    #     }
-    #     conn = mysql.connector.connect(**config)
-    #     cur =conn.cursor()
-    #     cur.execute(query)
-    #     results = cur.fetchall()
-    #     return results
+    
+    def ping(self,hostname):
+        # hostname = "10.40.30.6" #example
+        response = os.system("ping -c 1 " + hostname)
+        #and then check the response...
+        if response == 0:
+          print(hostname, 'is up!')
+          return True
+        else:
+          print(hostname, 'is down!')
+          return False
