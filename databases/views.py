@@ -12,9 +12,11 @@ import os
 import subprocess
 from rest_framework import authentication, permissions
 import logging
+from facilities.models import Facility
 
 logging.basicConfig(level=logging.INFO)
 
+# Syncing of Database
            
 class DatabaseCreate(APIView):
     authentication_classes = [authentication.TokenAuthentication]
@@ -58,6 +60,24 @@ class DatabaseDetails(APIView):
                 result = process.communicate()
                 for rs in result:
                     print(rs)
+
+# Syncing of Database end
+
+class DatabaseDumps(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def make_dir(self,dirname):
+        os.system("mkdir -p "+ dirname)
+       
+    def copy_dumps(self):
+        facilities =Facility.objects.all()
+        for facility in facilities:
+            facility_name = facility.facility_name.replace(' ', '_')
+            self.make_dir("~/Facilies_Backups/"+facility_name)
+            os.system("sshpass -p '{}' rsync -vP -r {}@{}:~/Backups/ ~/Facilies_Backups/{}"
+            .format(facility.password,facility.user_name,facility.ip_address,facility_name))
+            # os.system("sshpass -p 'lin@1088' rsync -vP emruser@10.40.30.6:~/euthini10102022_openmrs.sql .")
         # print(database.values_list())
         # for count,item in enumerate(database.values()):
         #     print(item)

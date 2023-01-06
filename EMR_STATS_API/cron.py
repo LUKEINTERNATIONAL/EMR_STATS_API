@@ -1,5 +1,6 @@
 from encounters.views import EncouterDetails
 from databases.views import DatabaseDetails
+from databases.views import DatabaseDumps
 from datetime import datetime
 
 def my_scheduled_job():
@@ -15,5 +16,8 @@ def my_scheduled_job():
     print("**************************************")
 
 def database_sync_job():
-    database = DatabaseDetails()
-    database.process_all_databases()
+    # database = DatabaseDetails()
+    # database.process_all_databases()
+    databaseDumps = DatabaseDumps()
+    databaseDumps.copy_dumps()
+    

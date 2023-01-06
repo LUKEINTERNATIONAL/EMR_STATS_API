@@ -67,10 +67,15 @@ class RemoteEncounters:
             client = remote.connect(facility_details['ip_address'],facility_details['user_name'],facility_details['password'])
             if(client):
                 print("Client connection successful")
-                file = remote.open_remote_file(client, "/var/www/BHT-EMR-API/config/database.yml")
                 try:
-                    data = yaml.safe_load(file)
-                
+                    try:
+                        file = remote.open_remote_file(client, "/var/www/BHT-EMR-API/config/database.yml")
+                        data = yaml.safe_load(file)
+                    except IOError as e:
+                        print("Fail to find BHT-EMR-API database config")
+                        print(e)
+                        return False
+                    
                     facility_query = '''"SELECT property_value as facility_name FROM global_property where property =\'current_health_center_name\';"'''
                 
                     encounter_query = '''"SELECT p.name as program_name, count(*) as total_encounters,
@@ -115,12 +120,15 @@ class RemoteEncounters:
                                 self.create_encounter(facility_id,result)
                     else:
                         print("Encounters not found")
+                        return False
                 except yaml.YAMLError as exc:
                     print(exc)
             else:
                 print("Failed to login to  a remote server")
+                return False
         elif "id" in facility_details:
                 self.vpn_processor(facility_details["id"],"inactive")
+                return False
            
 
 

@@ -10,7 +10,7 @@ class remote_operations:
         try:
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            client.connect(hostname=hostname, username=username, password=password)
+            client.connect(hostname=hostname, username=username, password=password,allow_agent=False)
 
             return client
         except Exception as e:
