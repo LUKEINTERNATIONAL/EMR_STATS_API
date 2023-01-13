@@ -62,7 +62,8 @@ class EncouterDetails(APIView):
             "id" : facilities[count].facility.id, 
             "user_name" : facilities[count].facility.user_name,
             "password" : facilities[count].facility.password,
-            "ip_address" : facilities[count].facility.ip_address
+            "ip_address" : facilities[count].facility.ip_address,
+            "district_id" : facilities[count].facility.district_id
             }
             remote = RemoteEncounters()
             # if(item['encounter_date'] == datetime.today().strftime('%Y-%m-%d')):

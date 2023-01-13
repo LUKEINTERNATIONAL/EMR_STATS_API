@@ -14,7 +14,7 @@ class MyUserManager(BaseUserManager):
         """
         if not username:
             raise ValueError('Users must have an username address')
-
+        
         user = self.model(
             username=username,
             name=name
@@ -24,8 +24,8 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self,email,password,name=''):
-        user = self.create_user(email,name=name,password=password)
+    def create_superuser(self,username,password,name=''):
+        user = self.create_user(username,name=name,password=password)
         user.is_admin = True
         user.is_active = True
         user.is_superuser = True
@@ -39,9 +39,9 @@ class CustomUser(AbstractBaseUser,PermissionsMixin):
         max_length=255,
         unique=True,
         )
-    name = models.CharField(max_length=255,blank=True,default='')
-    phone = models.CharField(max_length=100)
-    district_id = models.BigIntegerField()
+    name = models.CharField(max_length=255,blank=True)
+    phone = models.CharField(max_length=100,blank=True)
+    district_id = models.BigIntegerField(default=1)
 
     is_active = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
@@ -51,13 +51,13 @@ class CustomUser(AbstractBaseUser,PermissionsMixin):
     #REQUIRED_FIELDS = ['name']
 
     def get_full_name(self):
-        return self.name if self.name else self.email
+        return self.name if self.name else self.username
 
     def get_short_name(self):
-        return self.email
+        return self.username
 
     def __unicode__(self):
-        return self.email
+        return self.username
 
     @property
     def is_staff(self):
