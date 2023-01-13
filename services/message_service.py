@@ -54,6 +54,7 @@ class MessageService(APIView):
         vpn_tmp.update_vpn_temp_status()
         self.send_admin_messages()
         self.send_staff_messages()
+        VPNTemp.objects.all().delete()
 
     def send_admin_messages(self):
         query =''' SELECT * FROM users_customuser WHERE is_superuser = 'true'; '''
