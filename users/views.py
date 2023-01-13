@@ -8,11 +8,13 @@ from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
 import logging
-
-from django.contrib.auth.models import User
+from service import ApplicationService
+from django.http import JsonResponse
+from users.models import CustomUser
 
 
 from users.serializer import LoginRequestSerializer, RegisterRequestSerializer, PatchRequestSerializer
+# from users.serializer import CustomUserSerializer
 
 logging.basicConfig(level=logging.INFO)
 
@@ -40,14 +42,19 @@ class UserView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request): # list user
-       
-        users = get_user_model().objects.all()
-        result = []
-        for user in users:
-            result.append({"username": user.username, "email": user.email, "is_staff": user.is_staff, 
-                            "is_superuser": user.is_superuser})
+        service = ApplicationService()
+        query ='''SELECT * FROM users_customuser u INNER JOIN district d on d.id = u.district_id'''
+        results = service.query_processor(query)
+        return JsonResponse({
+            'users':results
+        })
+        # users = get_user_model().objects.all()
+        # result = []
+        # for user in users:
+        #     result.append({"username": user.username, "email": user.email, "is_staff": user.is_staff, 
+        #                     "is_superuser": user.is_superuser})
 
-        return Response(result)
+        # return Response(result)
     
     def post(self, request): # register
       
@@ -64,7 +71,7 @@ class UserView(APIView):
         data = serializer.validated_data
     
         try:
-            user = User.objects.get(username=data["username"])
+            user = CustomUser.objects.get(username=data["username"])
             logging.warning(f"attempt register: Username Existed")
             return Response({"status": "Username Existed"}, status=status.HTTP_409_CONFLICT)
         except ObjectDoesNotExist:
@@ -74,9 +81,14 @@ class UserView(APIView):
             logging.warning(f"attempt register: Password Validation Fail")
             return Response({"status": "Password Validation Fail"}, status=status.HTTP_406_NOT_ACCEPTABLE)
         
-        user = User.objects.create_user(username=data["username"], password=data["password"], 
-                                        email=data["email"] if "email" in data else None, 
-                                        is_staff=data["is_staff"], is_superuser=data["is_superuser"])
+        user = CustomUser(username=data["username"], 
+                            password=data["password"], 
+                            email=data["email"], 
+                            is_superuser=data["is_superuser"],
+                            district_id=data["district_id"],
+                            name=data["name"],
+                            phone=data["phone"],
+                            )
         user.save()
         
         return Response({"status": "OK"})

@@ -10,6 +10,8 @@ from vpn.models import VPN
 from vpn import views
 import os
 from encounters.create_encouter import EcounterCreate
+from vpn_temp.views import VPNTempCreate
+from vpn_temp.models import VPNTemp
 
 class RemoteEncounters:
     def create_facilitly(self,facility_name,facility_details):
@@ -17,7 +19,8 @@ class RemoteEncounters:
             "facility_name" : facility_name,
             "user_name" : facility_details['user_name'],
             "password" : facility_details['password'],
-            "ip_address" : facility_details['ip_address']
+            "ip_address" : facility_details['ip_address'],
+            "district_id" : facility_details['district_id']
         }
         facility = FacilityCreate()
         return (facility.post(facility_data).data)['id']
@@ -51,6 +54,7 @@ class RemoteEncounters:
             "date"       : datetime.today().strftime('%Y-%m-%d')
         }
 
+        self.insert_vpnTmp(vpn_data)
         if vpn_results:
             vpn =views.VPNDetail()
             vpn.put(vpn_data,vpn_results.id)
@@ -59,8 +63,12 @@ class RemoteEncounters:
             vpn = views.VPNCreate()
             vpn.post(vpn_data)
             print("vpn status created")
+
             
-   
+    def insert_vpnTmp(self,vpn_results):
+        vpn_temp = VPNTempCreate()
+        vpn_temp.post(vpn_results)
+
     def get_remote_encouters(self,facility_details):
         remote = remote_operations()
         if remote.ping(facility_details['ip_address']):

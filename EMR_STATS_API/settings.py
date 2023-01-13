@@ -39,10 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'facilities',
+    'districts',
     'encounters',
     'reports',
     'databases',
     'vpn',
+    'vpn_temp',
+    'sms',
+    'emails',
     'rest_framework',
     'django_crontab',
     'corsheaders',
@@ -148,8 +152,9 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRONJOBS = [
-    ('*/10 * * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'remote_cronjob.log' + ' 2>&1 ')),
-    ('*/5 * * * *', 'EMR_STATS_API.cron.database_sync_job', '>> ' + os.path.join(BASE_DIR,'database_cronjob.log' + ' 2>&1 '))   
+    ('*/15 * * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'logs/remote_cronjob.log' + ' 2>&1 ')),
+    ('0 2 * * *', 'EMR_STATS_API.cron.database_sync_job', '>> ' + os.path.join(BASE_DIR,'logs/database_cronjob.log' + ' 2>&1 ')),   
+    ('0 0 12 * * ?', 'EMR_STATS_API.cron.send_messages', '>> ' + os.path.join(BASE_DIR,'logs/send_messages_cronjob.log' + ' 2>&1 '))   
 ]
 CORS_ALLOW_ALL_ORIGINS=True
 
@@ -171,3 +176,5 @@ LOGGING = {
         },
     }
 }
+
+AUTH_USER_MODEL = 'users.CustomUser'

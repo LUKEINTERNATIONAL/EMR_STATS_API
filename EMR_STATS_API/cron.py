@@ -2,6 +2,8 @@ from encounters.views import EncouterDetails
 from databases.views import DatabaseDetails
 from databases.views import DatabaseDumps
 from datetime import datetime
+from sms.views import SMSDetails
+from services.message_service import MessageService
 
 def my_scheduled_job():
     encounters = EncouterDetails()
@@ -20,4 +22,8 @@ def database_sync_job():
     # database.process_all_databases()
     databaseDumps = DatabaseDumps()
     databaseDumps.copy_dumps()
+
+def send_messages():
+    message = MessageService()
+    message.send_messages()
     

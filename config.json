@@ -1,3 +1,6 @@
 {
-    "base_url":"http://127.0.0.1:8000/"
+    "base_url":"http://127.0.0.1:8000/",
+    "sms_url":"http://127.0.0.1:8188/sendsms",
+    "email_url":"http://0.0.0.0:8188/sendemail",
+    "from_email":"idsrnotification@linmalawi.org"
 }
