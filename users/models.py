@@ -8,15 +8,15 @@ from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, email, password,name=''):
+    def create_user(self, username, password,name=''):
         """
-        Creates and saves a User with the given email, password
+        Creates and saves a User with the given username, password
         """
-        if not email:
-            raise ValueError('Users must have an email address')
+        if not username:
+            raise ValueError('Users must have an username address')
 
         user = self.model(
-            email=self.normalize_email(email),
+            username=username,
             name=name
         )
 
