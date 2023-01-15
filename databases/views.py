@@ -73,10 +73,14 @@ class DatabaseDumps(APIView):
     def copy_dumps(self):
         facilities =Facility.objects.all()
         for facility in facilities:
-            facility_name = facility.facility_name.replace(' ', '_')
-            self.make_dir("~/Facilies_Backups/"+facility_name)
-            os.system("sshpass -p '{}' rsync -vP -r {}@{}:~/Backups ~/Facilies_Backups/{}"
-            .format(facility.password,facility.user_name,facility.ip_address,facility_name))
+            try:
+                print("Start copying from "+facility.facility_name)
+                facility_name = facility.facility_name.replace(' ', '_')
+                self.make_dir("~/Facilies_Backups/"+facility_name)
+                os.system("sshpass -p '{}' rsync -vP -r {}@{}:~/Backups ~/Facilies_Backups/{}"
+                .format(facility.password,facility.user_name,facility.ip_address,facility_name))
+            except:
+                print("Error can not copy from "+facility.facility_name)
             # os.system("sshpass -p 'lin@1088' rsync -vP emruser@10.40.30.6:~/euthini10102022_openmrs.sql .")
         # print(database.values_list())
         # for count,item in enumerate(database.values()):

@@ -42,7 +42,7 @@ class MessageService(APIView):
         return service.query_processor(query)
     
     def get_admin_facilities_data(self):
-        query ='''  SELECT STRING_AGG(facility_name, ', ') AS facilities FROM users_customuser u 
+        query ='''  SELECT STRING_AGG(DISTINCT facility_name, ', ') AS facilities FROM users_customuser u 
                     INNER JOIN facilities f on f.district_id = u.district_id
                     INNER JOIN vpn v on v.facility_id = f.id
                     WHERE vpn_sms_status ='inactive' AND date = '{}'; 

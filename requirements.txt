@@ -7,3 +7,5 @@ paramiko
 mysql
 mysql-connector
 PyYAML
+numpy
+requests

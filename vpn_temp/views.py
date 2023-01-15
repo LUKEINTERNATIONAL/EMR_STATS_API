@@ -105,13 +105,13 @@ class VPNTempDetail(APIView):
             print(vpn)
             try:
                 query ='''SELECT * FROM vpn_temp WHERE DATE(created_at) = '{}' AND vpn_status='active' AND facility_id = '{}'; '''.\
-                format(datetime.today().strftime('%Y-%m-%d'),vpn.facility_id)
+                format(datetime.today().strftime('%Y-%m-%d'),vpn['facility_id'])
                 vpn_temp_results = service.query_processor(query)
             except:
                 vpn_temp_results = False
             
             if(vpn_temp_results):
-                query = '''UPDATE vpn SET vpn_sms_status='active' WHERE id={};'''.format(vpn.id)
+                query = '''UPDATE vpn SET vpn_sms_status='active' WHERE id={};'''.format(vpn['id'])
             else:    
                 query = ''' UPDATE vpn SET vpn_sms_status='inactive' WHERE id={}; '''.format(vpn['id'])  
 
