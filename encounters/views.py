@@ -1,7 +1,7 @@
 import re
 
 from django.http import JsonResponse
-from remote_operations import remote_operations
+from services.remote_operations import remote_operations
 from encounters.serializer import EncontersSerializer
 from rest_framework.response import Response
 from rest_framework import status

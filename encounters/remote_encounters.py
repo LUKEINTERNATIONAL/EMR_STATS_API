@@ -1,6 +1,6 @@
 import re
 
-from remote_operations import remote_operations
+from services.remote_operations import remote_operations
 from datetime import datetime
 import yaml
 from facilities.views import FacilityCreate

@@ -1,5 +1,5 @@
 import re
-from remote_operations import remote_operations
+from services.remote_operations import remote_operations
 from django.http import JsonResponse
 from databases.serializer import DatabasesSerializer
 from rest_framework.response import Response

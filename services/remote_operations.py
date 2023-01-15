@@ -1,7 +1,10 @@
 import paramiko
 import mysql.connector
 import os
-
+import json
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
+config_data = json.load(open(os.path.join(BASE_DIR,'config.json')))
 class remote_operations:
     def __init__(self):
         pass
@@ -36,4 +39,15 @@ class remote_operations:
           return True
         else:
           print(hostname, 'is down!')
+          return False
+    
+    def ping_vpn(self):
+         # hostname = "10.40.30.6" #example
+        response = os.system("ping -c 1 " + config_data['vpn_ip'])
+        #and then check the response...
+        if response == 0:
+          print(config_data['vpn_ip'], 'VPN is up!')
+          return True
+        else:
+          print(config_data['vpn_ip'], 'VPN is down!')
           return False
