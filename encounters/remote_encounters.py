@@ -84,7 +84,9 @@ class RemoteEncounters:
                         print(e)
                         return False
                     
-                    facility_query = '''"SELECT property_value as facility_name FROM global_property where property =\'current_health_center_name\';"'''
+                    facility_query = '''SELECT name as facility_name FROM global_property gp
+                                        INNER JOIN location l on gp.property_value = l.location_id
+                                        where property ='current_health_center_id';'''
                 
                     encounter_query = '''"SELECT p.name as program_name, count(*) as total_encounters,
                     count(distinct(patient_id)) as total_patients FROM encounter e 
