@@ -1,0 +1,4 @@
+fileignoreconfig:
+- filename: databases/views.py
+  checksum: ba2f3f832818f66a5a50aef68c35c7e41f427f5eb8fb01fc00300ec579eb0800
+version: "1.0"

@@ -79,6 +79,8 @@ class DatabaseDumps(APIView):
                 self.make_dir("~/Facilies_Backups/"+facility_name)
                 os.system("sshpass -p '{}' rsync -vP -r {}@{}:~/Backups ~/Facilies_Backups/{}"
                 .format(facility.password,facility.user_name,facility.ip_address,facility_name))
+                os.system("sshpass -p '{}' rsync -vP -r {}@{}:~/backup ~/Facilies_Backups/{}"
+                .format(facility.password,facility.user_name,facility.ip_address,facility_name))
             except:
                 print("Error can not copy from "+facility.facility_name)
             # os.system("sshpass -p 'lin@1088' rsync -vP emruser@10.40.30.6:~/euthini10102022_openmrs.sql .")
