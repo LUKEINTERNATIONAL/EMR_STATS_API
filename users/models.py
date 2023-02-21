@@ -8,7 +8,7 @@ from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 
 class MyUserManager(BaseUserManager):
-    def create_user(self, username, password,name=''):
+    def create_user(self, username, password,**kwargs):
         """
         Creates and saves a User with the given username, password
         """
@@ -17,7 +17,7 @@ class MyUserManager(BaseUserManager):
         
         user = self.model(
             username=username,
-            name=name
+            **kwargs
         )
 
         user.set_password(password)
@@ -43,7 +43,7 @@ class CustomUser(AbstractBaseUser,PermissionsMixin):
     phone = models.CharField(max_length=100,blank=True)
     district_id = models.BigIntegerField(default=1)
 
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     objects = MyUserManager()
 

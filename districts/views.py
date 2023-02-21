@@ -15,7 +15,8 @@ from rest_framework import authentication, permissions
 class DistrictList(APIView):
     def get(self,request):
         service = ApplicationService()
-        query ='''SELECT * FROM district'''
+        query ='''SELECT * FROM district d
+        INNER JOIN zone z ON d.zone_id = z.id'''
         results = service.query_processor(query)
         return JsonResponse({
             'districts':results

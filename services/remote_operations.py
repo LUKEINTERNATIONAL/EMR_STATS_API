@@ -1,19 +1,20 @@
 import paramiko
 import mysql.connector
 import os
+import yaml
 import json
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 config_data = json.load(open(os.path.join(BASE_DIR,'config.json')))
-class remote_operations:
+class RemoteOperations:
     def __init__(self):
         pass
 
-    def connect(self, hostname, username, password):
+    def connect(self, data):
         try:
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            client.connect(hostname=hostname, username=username, password=password,allow_agent=False)
+            client.connect(hostname=data['ip_address'], username=data['user_name'], password=data['password'],allow_agent=False)
 
             return client
         except Exception as e:
@@ -24,10 +25,9 @@ class remote_operations:
         file = sftp_client.open(filename)
         return file
 
-    def execute_query(self,user,passwd ,db, ssh_client, query):
-        command = '''mysql -u{} -p{} {} -e {}'''.format(user,passwd,db,query)
+    def execute_query(self,data,ssh_client, query):
+        command = '''mysql -u{} -p{} {} -e {}'''.format(data['username'],data['password'],data['database'],query)
         (stdin, stdout, stderr) = ssh_client.exec_command(command)
-        print("The query was successful")
         return stdout.readlines()
     
     def ping(self,hostname):
@@ -40,14 +40,17 @@ class remote_operations:
         else:
           print(hostname, 'is down!')
           return False
-    
-    def ping_vpn(self):
-         # hostname = "10.40.30.6" #example
-        response = os.system("ping -c 1 " + config_data['vpn_ip'])
-        #and then check the response...
-        if response == 0:
-          print(config_data['vpn_ip'], 'VPN is up!')
-          return True
-        else:
-          print(config_data['vpn_ip'], 'VPN is down!')
-          return False
+        
+    def read_emr_db_file(self,client):
+        try:
+          file = self.open_remote_file(client, "/var/www/BHT-EMR-API/config/database.yml")
+          data = yaml.safe_load(file)
+          return {
+              'username':data['default']['username'],
+              'password':data['default']['password'],
+              'database':data['development']['database'],
+          }
+        except IOError as e:
+            print("Fail to find BHT-EMR-API database config")
+            return False
+   

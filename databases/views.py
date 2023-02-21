@@ -1,5 +1,5 @@
 import re
-from services.remote_operations import remote_operations
+from services.remote_operations import RemoteOperations
 from django.http import JsonResponse
 from databases.serializer import DatabasesSerializer
 from rest_framework.response import Response
@@ -13,6 +13,7 @@ import subprocess
 from rest_framework import authentication, permissions
 import logging
 from facilities.models import Facility
+from databases.tasks import copy_dumps_task
 
 logging.basicConfig(level=logging.INFO)
 
@@ -51,7 +52,7 @@ class DatabaseDetails(APIView):
     def process_all_databases(self):
         database = Databases.objects.all()
         for count,item in enumerate(database.values()):
-            remote = remote_operations()
+            remote = RemoteOperations()
             if remote.ping(item["server_ip_address"]):
                 process = subprocess.Popen(["pt-table-sync","--verbose","--database",item["database_name"],"--execute",\
                                         "h={},u={},p={}".format(item["server_ip_address"],item["database_username"],item["database_password"]),\
@@ -67,22 +68,11 @@ class DatabaseDumps(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    def make_dir(self,dirname):
-        os.system("mkdir -p "+ dirname)
-       
     def copy_dumps(self):
         facilities =Facility.objects.all()
         for facility in facilities:
-            try:
-                print("Start copying from "+facility.facility_name)
-                facility_name = facility.facility_name.replace(' ', '_')
-                self.make_dir("~/Facilies_Backups/"+facility_name)
-                os.system("sshpass -p '{}' rsync -vP -r {}@{}:~/Backups ~/Facilies_Backups/{}"
-                .format(facility.password,facility.user_name,facility.ip_address,facility_name))
-                os.system("sshpass -p '{}' rsync -vP -r {}@{}:~/backup ~/Facilies_Backups/{}"
-                .format(facility.password,facility.user_name,facility.ip_address,facility_name))
-            except:
-                print("Error can not copy from "+facility.facility_name)
+            copy_dumps_task(facility)
+            
             # os.system("sshpass -p 'lin@1088' rsync -vP emruser@10.40.30.6:~/euthini10102022_openmrs.sql .")
         # print(database.values_list())
         # for count,item in enumerate(database.values()):

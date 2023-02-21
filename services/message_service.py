@@ -1,4 +1,3 @@
-
 from django.shortcuts import render
 from facilities.models import Facility
 # from encounters.views import RemoteEncounters

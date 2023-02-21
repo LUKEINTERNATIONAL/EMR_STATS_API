@@ -1,22 +1,23 @@
-from encounters.views import EncouterDetails
-from databases.views import DatabaseDetails
+from services.remote_service import RemoteService
 from databases.views import DatabaseDumps
 from datetime import datetime
-from sms.views import SMSDetails
 from services.message_service import MessageService
-from services.remote_operations import remote_operations
+from services.remote_operations import RemoteOperations
+import os
+import json
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
+config_data = json.load(open(os.path.join(BASE_DIR,'config.json')))
 
-
-
+remote = RemoteOperations()
 def my_scheduled_job():
-    remote = remote_operations()
-    if remote.ping_vpn():
-        encounters = EncouterDetails()
+    if remote.ping(config_data['vpn_ip']):
         print("**************************************")
         print("Start processing data")
         print(datetime.now())
         print("**************************************")
-        encounters.process_all_facilities()
+        remote_facility= RemoteService()
+        remote_facility.get_all_facility()
         print("**************************************")
         print("End processing data")
         print(datetime.now())
@@ -28,8 +29,7 @@ def my_scheduled_job():
 def database_sync_job():
     # database = DatabaseDetails()
     # database.process_all_databases()
-    remote = remote_operations()
-    if remote.ping_vpn():
+    if remote.ping(config_data['vpn_ip']):
         databaseDumps = DatabaseDumps()
         databaseDumps.copy_dumps()
     else:
@@ -37,8 +37,7 @@ def database_sync_job():
         return False
 
 def send_messages():
-    remote = remote_operations()
-    if remote.ping_vpn():
+    if remote.ping(config_data['vpn_ip']):
         message = MessageService()
         message.send_messages()
     else:

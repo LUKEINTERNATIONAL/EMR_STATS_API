@@ -19,9 +19,9 @@ with open('/var/www/facilities_ips.csv', 'r') as file:
             "password": "letmein",
             "ip_address": row[0]
         }]
-        if(remote.get_remote_encouters(facility_details[0])):
+        if(remote.process_remote_data(facility_details[0])):
             print("Successfully added 1")
-        elif(remote.get_remote_encouters(facility_details[1])):
+        elif(remote.process_remote_data(facility_details[1])):
             print("Successfully added 2")
-        elif(remote.get_remote_encouters(facility_details[2])):
+        elif(remote.process_remote_data(facility_details[2])):
             print("Successfully added 3")

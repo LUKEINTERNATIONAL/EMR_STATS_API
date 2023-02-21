@@ -15,3 +15,7 @@ cronjob:
     */5 * * * * /usr/bin/python3 /var/www/EMR_STATS_API/manage.py crontab run bd9d26c4e133f356874ffa417534f010 >> /var/www/EMR_STATS_API/cronjob.log 2>&1
 
 sudo psql --host=localhost --dbname=emr_stats --username=root
+
+#for missing sessions
+python manage.py migrate --fake sessions zero
+python manage.py migrate sessions

@@ -47,10 +47,14 @@ INSTALLED_APPS = [
     'vpn_temp',
     'sms',
     'emails',
+    'viral_load',
+    'zones',
+    'users.apps.UsersConfig',
+    'services',
+    'django_celery_results',
     'rest_framework',
     'django_crontab',
     'corsheaders',
-    'users.apps.UsersConfig',
     'rest_framework.authtoken',
     
     
@@ -103,7 +107,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'emr_stats',
-        'USER': 'postgres',
+        'USER': 'root',
         'PASSWORD': 'root',
         'HOST': 'localhost',
         'PORT': 5432
@@ -178,3 +182,10 @@ LOGGING = {
 }
 
 AUTH_USER_MODEL = 'users.CustomUser'
+AUTHENTICATION_BACKENDS = (
+   "django.contrib.auth.backends.ModelBackend",
+   "allauth.account.auth_backends.AuthenticationBackend"
+)
+
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'

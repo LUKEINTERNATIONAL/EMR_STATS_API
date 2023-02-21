@@ -39,3 +39,16 @@ class VPNReportList(APIView):
         return JsonResponse({
             'facilities':results
         })
+        
+class ViralLoadList(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self,request):
+        service = ApplicationService()
+        query ='''SELECT * FROM public.viral_load v
+            INNER JOIN facilities f ON v.facility_id = f.id
+           WHERE DATE(v.created_at) BETWEEN {} AND {};'''.format(request.GET["start_date"],request.GET["end_date"])
+        results = service.query_processor(query)
+        return JsonResponse({
+            'viral_load':results
+        })
