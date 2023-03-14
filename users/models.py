@@ -41,7 +41,8 @@ class CustomUser(AbstractBaseUser,PermissionsMixin):
         )
     name = models.CharField(max_length=255,blank=True)
     phone = models.CharField(max_length=100,blank=True)
-    district_id = models.BigIntegerField(default=1)
+    district_id = models.BigIntegerField(default=0)
+    zone_id = models.BigIntegerField(default=0)
 
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)

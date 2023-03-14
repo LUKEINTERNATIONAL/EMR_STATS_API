@@ -14,6 +14,7 @@ from rest_framework import authentication, permissions
 import logging
 from facilities.models import Facility
 from databases.tasks import copy_dumps_task
+from django.forms.models import model_to_dict
 
 logging.basicConfig(level=logging.INFO)
 
@@ -71,7 +72,13 @@ class DatabaseDumps(APIView):
     def copy_dumps(self):
         facilities =Facility.objects.all()
         for facility in facilities:
-            copy_dumps_task(facility)
+            facility_data = {
+                'facility_name':facility.facility_name,
+                'password':facility.password,
+                'user_name':facility.user_name,
+                'ip_address':facility.ip_address
+            }
+            copy_dumps_task.delay(facility_data)
             
             # os.system("sshpass -p 'lin@1088' rsync -vP emruser@10.40.30.6:~/euthini10102022_openmrs.sql .")
         # print(database.values_list())

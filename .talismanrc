@@ -2,9 +2,9 @@ fileignoreconfig:
 - filename: EMR_STATS_API/settings.py
   checksum: be5b6d95b25a549204ea9a4e7268c2031bc26939c2d25c72f6964db8db6687ea
 - filename: databases/tasks.py
-  checksum: 464468c7d69ae5b898ba63b726587accb2a4f26cf641497dfddf9781afb4d743
+  checksum: ece09188ec8630f6cd7ace61023114a3c5d0520a48a45ce23aca7d478feb050c
 - filename: databases/views.py
-  checksum: ba2f3f832818f66a5a50aef68c35c7e41f427f5eb8fb01fc00300ec579eb0800
+  checksum: ce18b35fa4a8ec50fd5e1f683b3fc17ce7a0d2ac489a1d19e7c823a880d23847
 - filename: districts/migrations/0002_district_zone.py
   checksum: 1da4248ead299e75b34e9c8eedb068659c6000ab763e35ddb68f812b9879ad5b
 - filename: districts/models.py
@@ -20,7 +20,7 @@ fileignoreconfig:
 - filename: users/serializer.py
   checksum: d724ad637098ce64bfd78abb4a46e44735eaa4e9ddafa57518cd24dda360536b
 - filename: users/views.py
-  checksum: e9ad4d732f67a4d15690e260a25ed425c8a1d25488348f17acdf5842fc64295f
+  checksum: b67cc8b6c9061ab0411f6d825a6f38a65cfce48930b114b5fdddb7f884847bbc
 - filename: viral_load/migrations/0001_initial.py
   checksum: 9b76f0d564c3139c9b2464cb3ddc8c85e905b23839d500aaf75d9d778b780ad5
 - filename: viral_load/models.py

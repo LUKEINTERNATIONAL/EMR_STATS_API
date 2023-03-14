@@ -35,9 +35,19 @@ class MessageService(APIView):
         query ='''  SELECT email,phone,STRING_AGG(facility_name, ', ') AS facilities FROM users_customuser u 
                     INNER JOIN facilities f on f.district_id = u.district_id
                     INNER JOIN vpn v on v.facility_id = f.id
-                    WHERE vpn_sms_status ='inactive' AND date = '{}'
+                    WHERE vpn_sms_status ='inactive' AND date = '{}' AND u.district_id !=0
                     GROUP BY f.district_id,phone,email; 
             '''.format(datetime.today().strftime('%Y-%m-%d'))
+        return service.query_processor(query)
+    
+    def get_zone_facilities_data(self,zone_id):
+        query =''' SELECT STRING_AGG(DISTINCT facility_name, ', ') AS facilities FROM users_customuser u 
+                INNER JOIN facilities f on f.district_id = u.district_id
+                INNER JOIN vpn v on v.facility_id =f.id
+                INNER JOIN district d on d.id = u.district_id
+                INNER JOIN zone z on d.zone_id = z.id
+                WHERE vpn_sms_status ='inactive' AND z.id={} AND date = '{}'; 
+            '''.format(zone_id,datetime.today().strftime('%Y-%m-%d'))
         return service.query_processor(query)
     
     def get_admin_facilities_data(self):
@@ -52,25 +62,32 @@ class MessageService(APIView):
         vpn_tmp =VPNTempDetail()
         vpn_tmp.update_vpn_temp_status()
         self.send_admin_messages()
+        self.send_zone_messages()
         self.send_staff_messages()
         VPNTemp.objects.all().delete()
+        
+    def build_message(self,facilities,phone,email):
+        sms_arr =sms.process_sms_messages(facilities)
+        sms.compose_sms_message(sms_arr,phone)
+        message = EmailDetails().compose_email_message(facilities)
+        EmailDetails().send_email(email,message)
 
     def send_admin_messages(self):
-        query =''' SELECT * FROM users_customuser WHERE is_superuser = 'true'; '''
+        query =''' SELECT * FROM users_customuser WHERE zone_id = 0 AND district_id = 0;'''
         user_results = service.query_processor(query)
         facilities = self.get_admin_facilities_data()
         for user in user_results:
-            sms_arr =sms.process_sms_messages(facilities[0]['facilities'])
-            sms.compose_sms_message(sms_arr,user['phone'])
-            message = email.compose_email_message(facilities[0]['facilities'])
-            email.send_email(user['email'],message)
+            self.build_message(facilities[0]['facilities'],user['phone'],user['email'])
            
     def send_staff_messages(self):
         user_results = self.get_staff_message_data()
         for user in user_results:
-            sms_arr =sms.process_sms_messages(user['facilities'])
-            sms.compose_sms_message(sms_arr,user['phone'])
-            message = email.compose_email_message(user['facilities'])
-            email.send_email(user['email'],message)
-
+            self.build_message(user['facilities'],user['phone'],user['email'])
+            
+    def send_zone_messages(self):
+        query =''' SELECT * FROM users_customuser WHERE zone_id > 0 AND district_id = 0; '''
+        user_results = service.query_processor(query)
+        for user in user_results:
+            facilities = self.get_zone_facilities_data(user['zone_id'])
+            self.build_message(facilities[0]['facilities'],user['phone'],user['email'])
    

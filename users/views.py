@@ -8,10 +8,29 @@ import logging
 from service import ApplicationService
 from django.http import JsonResponse
 from users.models import CustomUser
-from users.serializer import RegisterRequestSerializer, PatchRequestSerializer
+from users.serializer import RegisterRequestSerializer, PatchRequestSerializer, LoginSerializers
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+from django.contrib.auth import login
 
 logging.basicConfig(level=logging.INFO)      
 
+class LoginAPIView(APIView): 
+    def post(self, request):
+        serializer = LoginSerializers(data=request.data)
+        if serializer.is_valid():
+            data = serializer.data
+            username = data['username']
+            password = data['password']
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({"message": "success", "code": status.HTTP_201_CREATED, "details": serializer.data,
+                             "Token": token.key})
+            return Response(
+                {"message": "error", "code": status.HTTP_401_UNAUTHORIZED, "details": ["Invalid credentials"]})
+            
 class UserView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
@@ -48,7 +67,8 @@ class UserView(APIView):
             password=data["password"],
             email=data["email"], 
             is_superuser=data["is_superuser"],
-            district_id=data["district_id"],
+            district_id=data["district_id"] if data["district_id"] else 0,
+            zone_id= data["zone_id"] if data["zone_id"] else 0,
             name=data["name"],
             phone=data["phone"],
         )

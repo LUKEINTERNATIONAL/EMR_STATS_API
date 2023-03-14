@@ -7,8 +7,10 @@ class ViralLoad(models.Model):
     accession_number = models.CharField(max_length=100, unique=True)
     person_id = models.CharField(max_length=100)
     results = models.CharField(max_length=100,blank=True)
+    acknowledgement_type = models.CharField(max_length=100,blank=True)
     ordered_date = models.CharField(max_length=100)
     released_date = models.CharField(max_length=100,blank=True)
+    acknowledgement_date = models.CharField(max_length=100,blank=True,default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
