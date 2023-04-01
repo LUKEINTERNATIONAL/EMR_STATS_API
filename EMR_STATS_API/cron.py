@@ -1,5 +1,5 @@
 from services.remote_service import RemoteService
-from databases.views import DatabaseDumps
+from databases.views import FacilityDumps
 from datetime import datetime
 from services.message_service import MessageService
 from services.remote_operations import RemoteOperations
@@ -30,7 +30,7 @@ def database_sync_job():
     # database = DatabaseDetails()
     # database.process_all_databases()
     if remote.ping(config_data['vpn_ip']):
-        databaseDumps = DatabaseDumps()
+        databaseDumps = FacilityDumps()
         databaseDumps.copy_dumps()
     else:
         print("==================== Can not copy dumps VPN is Down==================")

@@ -1,5 +1,6 @@
 import paramiko
 import mysql.connector
+import ping3
 import os
 import yaml
 import json
@@ -30,16 +31,22 @@ class RemoteOperations:
         (stdin, stdout, stderr) = ssh_client.exec_command(command)
         return stdout.readlines()
     
-    def ping(self,hostname):
-        # hostname = "10.40.30.6" #example
-        response = os.system("ping -c 1 " + hostname)
-        #and then check the response...
-        if response == 0:
-          print(hostname, 'is up!')
-          return True
+    # def ping(self,hostname):
+    #     # hostname = "10.40.30.6" #example
+    #     response = os.system("ping -c 1 " + hostname)
+    #     #and then check the response...
+    #     if response == 0:
+    #       print(hostname, 'is up!')
+    #       return True
+    #     else:
+    #         return False
+        
+    def ping(self,host):
+        response = ping3.ping(host)
+        if response is not None:
+            return response
         else:
-          print(hostname, 'is down!')
-          return False
+            return False
         
     def read_emr_db_file(self,client):
         try:

@@ -26,8 +26,15 @@ class LoginAPIView(APIView):
             if user is not None:
                 login(request, user)
                 token, created = Token.objects.get_or_create(user=user)
-                return Response({"message": "success", "code": status.HTTP_201_CREATED, "details": serializer.data,
-                             "Token": token.key})
+                user = CustomUser.objects.get(username=username)
+                return Response({
+                    "message": "success", 
+                    "code": status.HTTP_201_CREATED, 
+                    "name": user.name,
+                    "is_superuser": user.is_superuser,
+                    "username": user.username,
+                    "Token": token.key
+                    })
             return Response(
                 {"message": "error", "code": status.HTTP_401_UNAUTHORIZED, "details": ["Invalid credentials"]})
             

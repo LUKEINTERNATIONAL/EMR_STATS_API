@@ -5,8 +5,8 @@ from facilities.models import Facility
 class Enconters(models.Model):
     facility = models.ForeignKey(Facility,on_delete=models.CASCADE)
     program_name = models.CharField(max_length=100)
-    total_encounters = models.CharField(max_length=100)
-    total_patients = models.CharField(max_length=100)
+    total_encounters = models.BigIntegerField()
+    total_patients = models.BigIntegerField()
     encounter_date = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

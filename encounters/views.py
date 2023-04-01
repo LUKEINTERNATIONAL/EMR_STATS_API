@@ -117,6 +117,5 @@ class RemoteEncounters:
                     self.update_encounter(result,encounter_exist)
                 else:
                     self.create_encounter(facility_id,result)
-            else:
-                print("Encounters not found")
-                return False
+        else:
+            print("Encounters not found")
