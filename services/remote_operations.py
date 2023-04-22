@@ -25,11 +25,19 @@ class RemoteOperations:
         sftp_client = ssh_client.open_sftp()
         file = sftp_client.open(filename)
         return file
+    
+    def execute_command(self,command,ssh_client):
+        (stdin, stdout, stderr) = ssh_client.exec_command(command)
+        return stdout.readlines()
 
     def execute_query(self,data,ssh_client, query):
         command = '''mysql -u{} -p{} {} -e {}'''.format(data['username'],data['password'],data['database'],query)
-        (stdin, stdout, stderr) = ssh_client.exec_command(command)
-        return stdout.readlines()
+        self.execute_command(command,ssh_client)
+    
+    def get_remote_file_size(self, ssh_client, remote_path):
+        sftp_client = ssh_client.open_sftp()
+        file2_size = sftp_client.stat(remote_path).st_size
+        return file2_size
     
     # def ping(self,hostname):
     #     # hostname = "10.40.30.6" #example

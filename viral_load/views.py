@@ -17,7 +17,7 @@ class ViralLoadList(APIView):
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT * FROM encounters e INNER JOIN facilities f on f.id = e.facility_id 
-        WHERE encounter_date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))
+        WHERE encounter_date = '{}' AND f.viral_load = '1'; '''.format(datetime.today().strftime('%Y-%m-%d'))
         results = service.query_processor(query)
         return JsonResponse({
             'facilities':results

@@ -29,4 +29,5 @@ urlpatterns = [
     path('reports/', include('reports.urls')),
     path('databases/', include('databases.urls')),
     path('vpn/', include('vpn.urls')),    
+    path('viral_load/', include('viral_load.urls')),    
 ]

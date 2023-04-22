@@ -84,11 +84,11 @@ class VPNReportList(APIView):
             columns = 'facility_name,ip_address,vpn_status,date'
         else:
             columns = 'facility_name,ip_address'
-            
+
         query = '''SELECT 
                     CONCAT(
-                        FLOOR(total_seconds / 3600), ' hours, ',
-                        FLOOR((total_seconds % 3600) / 60), ' minutes'
+                        FLOOR(CAST(total_seconds AS integer) / 3600), ' hours, ',
+                        FLOOR((CAST(total_seconds AS integer) % 3600) / 60), ' minutes'
                     ) AS total_time,
                     {}
                     FROM (
@@ -100,7 +100,7 @@ class VPNReportList(APIView):
                         where date BETWEEN {} AND {} group by 
                         {}
                     ) AS subquery;'''.format(columns,columns,request.GET["start_date"],request.GET["end_date"],columns)
-                    
+
         results = service.query_processor(query)
         return JsonResponse({
             'facilities':results
@@ -113,7 +113,7 @@ class ViralLoadList(APIView):
         service = ApplicationService()
         query ='''SELECT * FROM public.viral_load v
             INNER JOIN facilities f ON v.facility_id = f.id
-           WHERE DATE(v.created_at) BETWEEN {} AND {};'''.format(request.GET["start_date"],request.GET["end_date"])
+           WHERE viral_load = '1' AND DATE(v.created_at) BETWEEN {} AND {};'''.format(request.GET["start_date"],request.GET["end_date"])
         results = service.query_processor(query)
         return JsonResponse({
             'viral_load':results

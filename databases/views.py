@@ -17,55 +17,23 @@ from databases.tasks import copy_dumps_task
 from django.forms.models import model_to_dict
 import subprocess
 from datetime import datetime
+from sendfile import sendfile
+from django.http import HttpResponse
 
 logging.basicConfig(level=logging.INFO)
 
-# Syncing of Database
-           
-# class DatabaseCreate(APIView):
-#     authentication_classes = [authentication.TokenAuthentication]
-#     permission_classes = [permissions.IsAuthenticated]
+class DownloadDump(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
     
-#     def post(self,request):
-#         logging.warning(f"Posted data")
-#         logging.warning(request.data)
-#         serializer = DatabasesSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data)
-#         else:
-#             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    def get(self,request,dump_name):
+        # Construct the full file path
+        file_path = os.path.expanduser("~")+'/Facilities_Backups/'+dump_name.replace("+", "/")
+        with open(file_path, 'rb') as f:
+            response = HttpResponse(f.read(), content_type='application/octet-stream')
+            response['Content-Disposition'] = 'attachment; filename=' + os.path.basename(file_path)
+            return response
         
-# class DatabaseList(APIView):
-#     authentication_classes = [authentication.TokenAuthentication]
-#     permission_classes = [permissions.IsAuthenticated]
-    
-#     def get(self,request):
-#         service = ApplicationService()
-#         query ='''SELECT * FROM databases; '''
-#         results = service.query_processor(query)
-#         return JsonResponse({
-#             'databases':results
-#         })
-
-# class DatabaseDetails(APIView):
-#     authentication_classes = [authentication.TokenAuthentication]
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     def process_all_databases(self):
-#         database = Databases.objects.all()
-#         for count,item in enumerate(database.values()):
-#             remote = RemoteOperations()
-#             if remote.ping(item["server_ip_address"]):
-#                 process = subprocess.Popen(["pt-table-sync","--verbose","--database",item["database_name"],"--execute",\
-#                                         "h={},u={},p={}".format(item["server_ip_address"],item["database_username"],item["database_password"]),\
-#                                         "h=127.0.0.1,u=root,p=root","--noforeign-key-checks",\
-#                                         "--nocheck-child-tables"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-#                 result = process.communicate()
-#                 for rs in result:
-#                     print(rs)
-
-# Syncing of Database end
 class FacilityDumps(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
@@ -87,7 +55,51 @@ class FacilityDumps(APIView):
             return subprocess.check_output(command, shell=True).decode('utf-8').split('\n')
         except:
             return ""
-    
+        
+    def build_dump_progress(self):
+        Databases.objects.all().delete()
+        facilities =Facility.objects.all()
+        for facility in facilities:
+            facility_details = {
+                'facility_name':facility.facility_name,
+                'password':facility.password,
+                'user_name':facility.user_name,
+                'ip_address':facility.ip_address
+            }
+            remote = RemoteOperations()
+            client = remote.connect(facility_details)
+            command = '~/Facilities_Backups/{}/Backups'.format(facility_details["facility_name"])
+            dumps = self.get_facility_dumps(command)
+            for dump in dumps:
+                dump_details =dump.split(' ')
+                if(dump_details[0]):
+                    dump_name = dump_details[3]
+                    try:
+                        remote_path = '/home/{}/backup/{}'.format(facility_details["user_name"],dump_name)
+                        remote_size = remote.get_remote_file_size(client,remote_path)
+                    except:
+                        remote_path = '/home/{}/Backups/{}'.format(facility_details["user_name"],dump_name)
+                        remote_size = remote.get_remote_file_size(client,remote_path)
+                        
+                    local_size = os.path.getsize(command+'/'+dump_name)
+                    result = remote_size - local_size
+                    percentage = (result / remote_size) * 100
+                    
+                    data = {
+                            'facility_name': facility_details["facility_name"],
+                            'dump_name': dump_name,
+                            'progress':percentage
+                        }
+                    self.create_dump_details(data)
+                    
+    def create_dump_details(self,data):
+        serializer = DatabasesSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+                
+        
+        
     def get(self,request,facility_name):
         command = '~/Facilities_Backups/{}/Backups'.format(facility_name)
         dumps = self.get_facility_dumps(command)
@@ -99,6 +111,7 @@ class FacilityDumps(APIView):
                                     'dump_size':dump_details[0],
                                     'modified_date': dump_details[1]+" "+dump_details[2],
                                     'dump_name':dump_details[3],
+                                    'progress':Databases.objects.get(facility_name = facility_name).progress,
                                     'dump_status':"",
                                 }
                 dumps_filtered.append(dumps_details)
@@ -114,9 +127,7 @@ class DumpsOverview(APIView):
     def read_facilities_dump(self,path):
         command = "cd {} && du -x --si --time --max-depth=1".format(path)
         return subprocess.check_output(command, shell=True).decode('utf-8').split('\n')
-    
-    
-        
+         
     def get_size(self,path):
         command = 'du -sch '+path
         return subprocess.check_output(command, shell=True).decode('utf-8').split('\t')[0]
@@ -143,37 +154,3 @@ class DumpsOverview(APIView):
             'facilities':facilities_filter
         }) 
                       
-            # os.system("sshpass -p 'lin@1088' rsync -vP emruser@10.40.30.6:~/euthini10102022_openmrs.sql .")
-        # print(database.values_list())
-        # for count,item in enumerate(database.values()):
-        #     print(item)
-            # command = '''pt-table-sync --verbose --databases {} --execute h={},u={},p={} h={},u={},p={} --noforeign-key-checks --nocheck-child-tables > /var/www/EMR_STATS_API/database_cronjob.log 2>&1'''\
-            # .format(item["database_name"],item["server_ip_address"],item["database_username"],item["database_password"],'127.0.0.1','root','root')
-        #     os.system(command)
-                
-
-    # def get_database_by_pk(self,pk):
-    #     try:
-    #         return  Databases.objects.get(pk=pk)
-    #     except:
-    #         return Response({
-    #             'error': 'Book does not exist'
-    #         }, status=status.HTTP_404_NOT_FOUND)
- 
-    # def get(self,request,pk):
-    #     facility = self.get_facility_by_pk(pk)
-    #     serializer = EncontersSerializer(facility)
-    #     return Response(serializer.data)
-
-    # def put(self,request,pk):
-    #     facility = self.get_facility_by_pk(pk)
-    #     serializer = EncontersSerializer(facility, data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data)
-    #     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    
-    # def delete(self,request,pk):
-    #     facility = self.get_facility_by_pk(pk)
-    #     facility.delete()
-    #     return Response(status=status.HTTP_204_NO_CONTENT)

@@ -118,7 +118,7 @@ class VPNTempDetail(APIView):
             try:
                 service.query_processor(query)  
             except:
-                print("fail to update")
+                print("fail to update vpn temp status")
 
 
 

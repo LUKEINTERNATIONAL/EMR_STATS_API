@@ -53,6 +53,7 @@ class FacilityDetail(APIView):
     def get(self,request,pk):
         facility = self.get_facility_by_pk(pk)
         if facility == False:
+            
             return Response({
                 'error': 'Facility not exist'
             }, status=status.HTTP_404_NOT_FOUND)
