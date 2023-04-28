@@ -78,14 +78,7 @@ class EcounterCreate(APIView):
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)  
 
 class RemoteEncounters:
-    def create_encounter(self,facility_id,result):
-        ecounter_data = { 
-            "facility" : facility_id,
-            "program_name" : result[0],
-            "total_encounters" : result[1],
-            "total_patients": result[2],
-            "encounter_date" : datetime.today().strftime('%Y-%m-%d')
-        }
+    def create_encounter(self,ecounter_data):
         encounter = EcounterCreate()
         encounter.post(ecounter_data)
 
@@ -100,6 +93,7 @@ class RemoteEncounters:
             INNER JOIN program p on p.program_id = e.program_id 
             WHERE DATE(e.date_created) = '{}' 
             group by e.program_id;"'''.format(datetime.today().strftime('%Y-%m-%d'))
+        print(usability_query)
         return remote.execute_query(data, client, usability_query)
         
     def process_encounter(self,db_data,client,facility_id,remote):
@@ -116,6 +110,13 @@ class RemoteEncounters:
                 if(encounter_exist):
                     self.update_encounter(result,encounter_exist)
                 else:
-                    self.create_encounter(facility_id,result)
+                    encounter_data = { 
+                        "facility" : facility_id,
+                        "program_name" : result[0],
+                        "total_encounters" : result[1],
+                        "total_patients": result[2],
+                        "encounter_date" : datetime.today().strftime('%Y-%m-%d')
+                    }
+                    self.create_encounter(encounter_data)
         else:
-            print("Encounters not found")
+            print(f"Encounters not found encounter_results = {encounter_results} facility_id ={facility_id} db_data = {db_data} client= {client} remote= {remote} ")

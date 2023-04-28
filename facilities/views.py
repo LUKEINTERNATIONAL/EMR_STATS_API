@@ -14,7 +14,7 @@ from rest_framework import authentication, permissions
 class FacilityList(APIView):
     def get(self,request):
         service = ApplicationService()
-        query ='''SELECT * FROM vpn v 
+        query ='''SELECT d.id as district_id,f.id as facility_id,* FROM vpn v 
         INNER JOIN facilities f on f.id = v.facility_id
         INNER JOIN district d on f.district_id = d.id
         INNER JOIN zone z on d.zone_id = z.id 
@@ -82,7 +82,26 @@ class FacilityDetail(APIView):
             }, status=status.HTTP_404_NOT_FOUND)
         
         facility.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status.HTTP_200_OK)
+    
+class ViralLoadStatus(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def put(self,request):
+        try:
+            facility = Facility.objects.get(ip_address=request.data['ip_address'])
+        except Facility.DoesNotExist:
+            return Response({
+                'error': 'Facility not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        facility.viral_load = request.data['status']
+        facility.save()
+        return Response({
+            'success': 'Viral Load status updated successfully'
+        }, status=status.HTTP_200_OK)
+        
 
 class RemoteFacility():
     def create_facility(self,facility_name,facility_details):
@@ -108,14 +127,13 @@ class RemoteFacility():
             except Facility.DoesNotExist:
                 exisiting_facility =False
         else:
-            return print("can not find remote facility")
+            return print(f"can not find remote facility = {facility_name}")
 
         if exisiting_facility:
             return exisiting_facility.id
-        elif "id" in facility_details:
+        else:
             return self.create_facility(facility_name,facility_details)
     
     def process_facility_data(self,db_data,client,facility_details,remote):
         facility_name = self.get_remote_facility_name(db_data,client,remote)
-        print(facility_name)
         return self.check_facility_existence(facility_name,facility_details)

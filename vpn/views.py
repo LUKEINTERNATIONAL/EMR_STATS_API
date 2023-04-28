@@ -102,7 +102,7 @@ class RemoteVNP(APIView):
             vpn_results = VPN.objects.get(date=datetime.today().strftime('%Y-%m-%d'), facility_id=facility_id)
         except VPN.DoesNotExist:
             vpn_results = False
-            print("VPN failed to update or create")
+            print(f"VPN failed to update or create {facility_id} VPN status = {status}")
         if(not response):
             response = 0.00
             

@@ -15,7 +15,7 @@ from rest_framework import authentication, permissions
 class DistrictList(APIView):
     def get(self,request):
         service = ApplicationService()
-        query ='''SELECT * FROM district d
+        query ='''SELECT d.id as district_id,z.id as zone_id,* FROM district d
         INNER JOIN zone z ON d.zone_id = z.id'''
         results = service.query_processor(query)
         return JsonResponse({
@@ -76,8 +76,8 @@ class DistrictDetail(APIView):
         facility = self.get_facility_by_pk(pk)
         if facility == False:
             return Response({
-                'error': 'Facility not exist'
+                'error': 'District not exist'
             }, status=status.HTTP_404_NOT_FOUND)
         
         facility.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)

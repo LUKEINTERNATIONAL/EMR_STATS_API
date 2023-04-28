@@ -1,6 +1,7 @@
 from django.shortcuts import render
 # from encounters.views import RemoteEncounters
 from zones.serializer import ZoneSerializer
+from zones.models import Zone
 from rest_framework.views import APIView 
 from rest_framework.response import Response
 from rest_framework import status
@@ -30,7 +31,51 @@ class ZoneCreate(APIView):
         serializer = ZoneSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response(status=status.HTTP_200_OK)
         else:
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)    
+            return Response(status=status.HTTP_400_BAD_REQUEST)    
+        
+class ZoneDetail(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_zone_by_pk(self,pk):
+        try:
+            return Zone.objects.get(pk=pk)
+        except:
+            return False
+ 
+    def get(self,request,pk):
+        zone = self.get_zone_by_pk(pk)
+        if zone == False:
+            
+            return Response({
+                'error': 'Zone not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = ZoneSerializer(zone)
+        return Response(serializer.data)
+
+    def put(self,request,pk):
+        zone = self.get_zone_by_pk(pk)
+        if zone == False:
+            return Response({
+                'error': 'Zone not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ZoneSerializer(zone, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self,request,pk):
+        zone = self.get_zone_by_pk(pk)
+        if zone == False:
+            return Response({
+                'error': 'Zone not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        zone.delete()
+        return Response(status.HTTP_200_OK)
          

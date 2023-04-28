@@ -16,6 +16,7 @@ import requests
 import json
 import numpy as np
 import math
+from services.tasks import send_sms_email
 
 service = ApplicationService()
 import os
@@ -106,7 +107,7 @@ class EmailDetails(APIView):
             'ipAddress':config_data['base_url'],
             'messageIDs':1
         }
-        requests.post(url = config_data['email_url'], json = message_data)
+        send_sms_email.delay(config_data['email_url'],message_data,"Email")
 
         
 

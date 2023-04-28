@@ -32,7 +32,7 @@ class RemoteOperations:
 
     def execute_query(self,data,ssh_client, query):
         command = '''mysql -u{} -p{} {} -e {}'''.format(data['username'],data['password'],data['database'],query)
-        self.execute_command(command,ssh_client)
+        return self.execute_command(command,ssh_client)
     
     def get_remote_file_size(self, ssh_client, remote_path):
         sftp_client = ssh_client.open_sftp()

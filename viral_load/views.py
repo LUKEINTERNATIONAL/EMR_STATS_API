@@ -40,10 +40,11 @@ class RemoteViralLoad(APIView):
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
         
     def get_lab_orders(self,data,client,remote):
-        lab_order_query ='''"SELECT od.accession_number,o.person_id,o.date_created as ordered_date FROM obs o
-                    INNER JOIN orders od ON o.order_id = od.order_id
-                    WHERE o.value_coded =856 AND DATE(o.date_created) = '{}'
-                    order by o.obs_id desc;"'''.format(datetime.today().strftime('%Y-%m-%d'))
+        lab_order_query ='''"SELECT od.accession_number,pi.identifier,o.date_created as ordered_date FROM obs o                    
+            INNER JOIN orders od ON o.order_id = od.order_id    
+            INNER JOIN patient_identifier pi ON pi.patient_id = o.person_id
+            WHERE o.value_coded =856 AND DATE(o.date_created) = '{}'                      
+            order by o.obs_id;"'''.format(datetime.today().strftime('%Y-%m-%d'))
         return remote.execute_query(data, client, lab_order_query)
         
     def get_lab_order_results(self,data,client,remote):
@@ -101,7 +102,7 @@ class RemoteViralLoad(APIView):
                     update_viral_load_acknowledgement.acknowledgement_date =  result[2]   
                     update_viral_load_acknowledgement.save()
                 except ViralLoad.DoesNotExist:
-                    print("Viral load acknowledgement_type results not available")
+                    pass
                 
     def process_lab_orders(self,db_data,client,facility_id,remote):
         results =self.get_lab_orders(db_data,client,remote)

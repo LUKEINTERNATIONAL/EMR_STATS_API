@@ -44,7 +44,10 @@ class UserView(APIView):
     
     def get(self, request): # list user
         service = ApplicationService()
-        query ='''SELECT * FROM users_customuser u INNER JOIN district d on d.id = u.district_id'''
+        query ='''SELECT u.id as userid,u.zone_id as is_zone,* FROM users_customuser u 
+        LEFT JOIN district d on d.id = u.district_id
+        LEFT JOIN zone z on z.id = d.zone_id
+        '''
         results = service.query_processor(query)
         return JsonResponse({
             'users':results
@@ -80,6 +83,37 @@ class UserView(APIView):
             phone=data["phone"],
         )
         return Response({"status": "OK"})
+    
+    def put(self, request, pk):
+        try:
+            user = CustomUser.objects.get(id=pk)
+        except ObjectDoesNotExist:
+            return Response({"status": "User does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        
+        user.username = request.data['username']
+        user.email = request.data['email']
+        user.name = request.data['name']
+        user.phone = request.data['phone']
+        user.is_superuser = request.data['is_superuser']
+        user.district_id = request.data['district_id'] if request.data['district_id'] else 0
+        user.zone_id = request.data['zone_id'] if request.data['zone_id'] else 0
+        user.save()
+        return Response({"status": "OK"})
+    
+    def delete(self, request, pk):
+        
+        try:
+            user = CustomUser.objects.get(id=pk)
+        except ObjectDoesNotExist:
+            logging.warning(f"attempt delete: Username Not Found")
+            return Response({"status": "Username Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            user.delete()
+            return Response({"status": "OK"})
+        except:
+            logging.error(f"attempt delete {pk}: server error")
+            return Response({"status": "Username Not Found"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class SingleUserView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
@@ -135,17 +169,4 @@ class SingleUserView(APIView):
         
         return Response({"status": "OK"})
 
-    def delete(self, request, username):
-        
-        try:
-            user = User.objects.get(username=username)
-        except ObjectDoesNotExist:
-            logging.warning(f"attempt delete: Username Not Found")
-            return Response({"status": "Username Not Found"}, status=status.HTTP_404_NOT_FOUND)
-
-        try:
-            user.delete()
-            return Response({"status": "OK"})
-        except:
-            logging.error(f"attempt delete {username}: server error")
-            return Response({"status": "Username Not Found"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    

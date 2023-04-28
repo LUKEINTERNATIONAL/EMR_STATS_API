@@ -95,9 +95,6 @@ class VPNTempDetail(APIView):
         facility.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-    def delete_all_vpn_temp():
-        VPNTemp.objects.all().delete()
-    
     def update_vpn_temp_status(self):
         query ='''SELECT * FROM vpn WHERE date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))
         vpn_results = service.query_processor(query)
@@ -115,10 +112,11 @@ class VPNTempDetail(APIView):
             else:    
                 query = ''' UPDATE vpn SET vpn_sms_status='inactive' WHERE id={}; '''.format(vpn['id'])  
 
+            print(f"vpn query {query}")
             try:
                 service.query_processor(query)  
             except:
-                print("fail to update vpn temp status")
+                print("fail to update vpn temp status id = {}".format(vpn['id']))
 
 
 
