@@ -26,9 +26,7 @@ SECRET_KEY = 'django-insecure-j9xy3u+os)508jhy+)258lg&!$o08hnodpc89#1!$rmd3$bdbw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "backend"
-]
+ALLOWED_HOSTS = ['0.0.0.0']
 
 
 # Application definition
@@ -41,14 +39,29 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'facilities',
+    'districts',
     'encounters',
+    'reports',
+    'databases',
     'vpn',
+    'vpn_temp',
+    'sms',
+    'emails',
+    'viral_load',
+    'zones',
+    'users.apps.UsersConfig',
+    'services',
+    'django_celery_results',
     'rest_framework',
     'django_crontab',
-    'corsheaders'
+    'corsheaders',
+    'rest_framework.authtoken',
+    
+    
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -56,7 +69,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware"
 ]
 
@@ -97,7 +109,7 @@ DATABASES = {
         'NAME': 'emr_stats',
         'USER': 'postgres',
         'PASSWORD': 'root',
-        'HOST': 'db',
+        'HOST': 'localhost',
         'PORT': 5432
     }
 }
@@ -144,14 +156,17 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRONJOBS = [
-    ('*/5 * * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'cronjob.log' + ' 2>&1 '))
+    ('*/15 * * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'logs/remote_cronjob.log' + ' 2>&1 ')),
+    ('0 2 * * *', 'EMR_STATS_API.cron.database_sync_job', '>> ' + os.path.join(BASE_DIR,'logs/database_cronjob.log' + ' 2>&1 ')),   
+    ('0 0 12 * * ?', 'EMR_STATS_API.cron.send_messages', '>> ' + os.path.join(BASE_DIR,'logs/send_messages_cronjob.log' + ' 2>&1 '))   
 ]
-CORS_ALLOW_ALL_ORIGINS=False
+CORS_ALLOW_ALL_ORIGINS=True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080"
+    "http://localhost:8000"
 ]
-
+CORS_ALLOW_HEADERS = ('content-disposition', 'accept-encoding',
+                      'content-type', 'accept', 'origin', 'authorization')
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -165,3 +180,13 @@ LOGGING = {
         },
     }
 }
+
+AUTH_USER_MODEL = 'users.CustomUser'
+AUTHENTICATION_BACKENDS = (
+   "django.contrib.auth.backends.ModelBackend",
+   "allauth.account.auth_backends.AuthenticationBackend"
+)
+
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'
+SENDFILE_BACKEND = 'sendfile.backends.xsendfile'

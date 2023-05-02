@@ -8,25 +8,26 @@ from rest_framework import status
 from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
-
+from rest_framework import authentication, permissions
 
 # Create your views here.
 class FacilityList(APIView):
     def get(self,request):
-        if "login" not in request.session:
-            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
-        elif request.session["login"] == False:
-            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
-
         service = ApplicationService()
-        query ='''SELECT * FROM vpn v INNER JOIN facilities f on f.id = v.facility_id
-         WHERE date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))
+        query ='''SELECT d.id as district_id,f.id as facility_id,* FROM vpn v 
+        INNER JOIN facilities f on f.id = v.facility_id
+        INNER JOIN district d on f.district_id = d.id
+        INNER JOIN zone z on d.zone_id = z.id 
+        WHERE date = '{}';'''.format(datetime.today().strftime('%Y-%m-%d'))
         results = service.query_processor(query)
         return JsonResponse({
             'facilities':results
         })
     
 class FacilityCreate(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
     def post(self,request):
         try:
             data = request.data  
@@ -38,9 +39,11 @@ class FacilityCreate(APIView):
             return Response(serializer.data)
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)    
-            
 
 class FacilityDetail(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
     def get_facility_by_pk(self,pk):
         try:
             return Facility.objects.get(pk=pk)
@@ -48,13 +51,9 @@ class FacilityDetail(APIView):
             return False
  
     def get(self,request,pk):
-        if "login" not in request.session:
-            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
-        elif request.session["login"] == False:
-            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
-        
         facility = self.get_facility_by_pk(pk)
         if facility == False:
+            
             return Response({
                 'error': 'Facility not exist'
             }, status=status.HTTP_404_NOT_FOUND)
@@ -63,13 +62,6 @@ class FacilityDetail(APIView):
         return Response(serializer.data)
 
     def put(self,request,pk):
-        if "login" not in request.session:
-            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
-        elif request.session["login"] == False:
-            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
-        elif request.session["is_staff"] == False:
-            return Response({"status": "You are not privileged"}, status=status.HTTP_401_UNAUTHORIZED)
-        
         facility = self.get_facility_by_pk(pk)
         if facility == False:
             return Response({
@@ -83,13 +75,6 @@ class FacilityDetail(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self,request,pk):
-        if "login" not in request.session:
-            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
-        elif request.session["login"] == False:
-            return Response({"status": "Denied"}, status=status.HTTP_401_UNAUTHORIZED)
-        elif request.session["is_staff"] == False:
-            return Response({"status": "You are not privileged"}, status=status.HTTP_401_UNAUTHORIZED)
-        
         facility = self.get_facility_by_pk(pk)
         if facility == False:
             return Response({
@@ -97,4 +82,58 @@ class FacilityDetail(APIView):
             }, status=status.HTTP_404_NOT_FOUND)
         
         facility.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status.HTTP_200_OK)
+    
+class ViralLoadStatus(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def put(self,request):
+        try:
+            facility = Facility.objects.get(ip_address=request.data['ip_address'])
+        except Facility.DoesNotExist:
+            return Response({
+                'error': 'Facility not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        facility.viral_load = request.data['status']
+        facility.save()
+        return Response({
+            'success': 'Viral Load status updated successfully'
+        }, status=status.HTTP_200_OK)
+        
+
+class RemoteFacility():
+    def create_facility(self,facility_name,facility_details):
+        try:
+            facility_details['facility_name'] =facility_name
+            print(facility_details)
+            facility = FacilityCreate()
+            return (facility.post(facility_details).data)['id']
+        except:
+            print("======== facility id not available at ("+ facility_name +") =============")
+        
+    def get_remote_facility_name(self,data,client,remote):
+        facility_name_query = '''"SELECT name as facility_name FROM global_property gp
+                        INNER JOIN location l on gp.property_value = l.location_id
+                        where property ='current_health_center_id';"'''
+        return remote.execute_query(data, client, facility_name_query)
+    
+    def check_facility_existence(self,facility_name,facility_details):
+        if facility_name:
+            facility_name = facility_name[1].rstrip('\n')
+            try:
+                exisiting_facility = Facility.objects.get(facility_name=facility_name)
+            except Facility.DoesNotExist:
+                exisiting_facility =False
+        else:
+            return print(f"can not find remote facility = {facility_name}")
+
+        if exisiting_facility:
+            return exisiting_facility.id
+        else:
+            return self.create_facility(facility_name,facility_details)
+    
+    def process_facility_data(self,db_data,client,facility_details,remote):
+        facility_name = self.get_remote_facility_name(db_data,client,remote)
+        return self.check_facility_existence(facility_name,facility_details)
