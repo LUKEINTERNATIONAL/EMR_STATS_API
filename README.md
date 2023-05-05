@@ -1,35 +1,41 @@
-
-
+# install pip
+sudo apt install python3-pip
+# install env
+sudo apt install python3-virtualenv
 pip3 install virtualenv
+# cd to project directory and create a project env using below command
 virtualenv env
 # TO activate env
 source env/bin/activate
-pip install django
+# install mysql package
+sudo apt-get install libmysqlclient-dev
+# Other dependace
+sudo apt-get install libpq-dev
+# install all requirements
 pip install -r requirements.txt
-run: python3 manage.py runserver
-migrate: python3 manage.py migrate
 
-first time you run the docker:
-    python3 manage.py makemigrations
-    python3 manage.py migrate
-    python3 manage.py createsuperuser
+# install postgres
+sudo apt install postgresql postgresql-contrib
+# To create user and database
+sudo -u postgres psql
+create database mydb;
+create user myuser with encrypted password 'mypass';
+grant all privileges on database mydb to myuser;
+# migrations
+python3 manage.py makemigrations
+python3 manage.py migrate
+# create user
+python3 manage.py createsuperuser
 
-in server:
-    make start
-    make stop
-    make restart SERVICE=[backend/frontend/nginx/db]
-
-cronjob:
-    */5 * * * * /usr/bin/python3 /var/www/EMR_STATS_API/manage.py crontab run bd9d26c4e133f356874ffa417534f010 >> /var/www/EMR_STATS_API/cronjob.log 2>&1
-
-sudo psql --host=localhost --dbname=emr_stats --username=root
-
-#for missing sessions
+# To start the application
+python3 manage.py runserver
+# for missing sessions
 python manage.py migrate --fake sessions zero
 python manage.py migrate sessions
 
-# TO load dump
+# TO create load dump
 pg_dump -U username -h localhost databasename > sqlfile.sql
+# TO load dump
 psql -h hostname -p port_number -U username -f your_file.sql databasename 
 
 # Permission dennied during ping
@@ -46,7 +52,7 @@ sudo sysctl net.ipv4.ping_group_range='0   2147483647'
 To permanently set this parameter:
 echo "# allow all users to create icmp sockets\n net.ipv4.ping_group_range=0 2147483647" | sudo tee -a /etc/sysctl.d/ping_group.conf
 
-# Setup celery
+# Install celery server
 sudo apt-get install rabbitmq-server
 # To create celery deamon 
 

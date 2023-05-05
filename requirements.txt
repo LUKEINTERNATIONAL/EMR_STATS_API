@@ -1,3 +1,4 @@
+django
 amqp       
 asgiref       
 bcrypt       
@@ -41,3 +42,4 @@ vine
 wcwidth     
 ping3  
 django-allauth
+django-sendfile

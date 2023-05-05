@@ -10,12 +10,12 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.AddField(
             model_name='vpn',
             name='end_down_time',
             field=models.CharField(blank=True, max_length=100),
         ),
-        migrations.AlterField(
+        migrations.AddField(
             model_name='vpn',
             name='start_down_time',
             field=models.CharField(blank=True, max_length=100),
