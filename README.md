@@ -22,6 +22,7 @@ create database mydb;
 create user myuser with encrypted password 'mypass';
 grant all privileges on database mydb to myuser;
 # migrations
+python manage.py makemigrations celery_results
 python3 manage.py makemigrations
 python3 manage.py migrate
 # create user
@@ -59,3 +60,9 @@ sudo apt-get install rabbitmq-server
 1. The file that you have referred in the link https://github.com/celery/celery/blob/3.0/extra/generic-init.d/celeryd needs to be copied in your /etc/init.d folder with the name celeryd
 2. Then you need to create a configuration file in the folder /etc/default with the name celeryd that is used by the above script. This configuration file basically defines certain variables and paths that are used by the above script. Here's an example configuration.
 3. This link Generic init scripts explains the process and can be used for reference
+
+# TO start flower 
+celery -A EMR_STATS_API flower
+
+# debug postgres
+/usr/lib/postgresql/10/bin/postgres -d 3 -D /var/lib/postgresql/10/main -c config_file=/etc/postgresql/10/main/postgresql.conf

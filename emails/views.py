@@ -103,7 +103,7 @@ class EmailDetails(APIView):
             'attachments': self.attachments()
         }
         message_data = {
-            'message': mailOptions,
+            'mailOptions': mailOptions,
             'ipAddress':config_data['base_url'],
             'messageIDs':1
         }
