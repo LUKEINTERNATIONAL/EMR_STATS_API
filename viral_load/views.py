@@ -43,7 +43,7 @@ class RemoteViralLoad(APIView):
         lab_order_query ='''"SELECT od.accession_number,pi.identifier,o.date_created as ordered_date FROM obs o                    
             INNER JOIN orders od ON o.order_id = od.order_id    
             INNER JOIN patient_identifier pi ON pi.patient_id = o.person_id
-            WHERE o.value_coded =856 AND DATE(o.date_created) = '{}'                      
+            WHERE o.value_coded =856 AND pi.identifier_type = 4 AND DATE(o.date_created) = '{}'                      
             order by o.obs_id;"'''.format(datetime.today().strftime('%Y-%m-%d'))
         return remote.execute_query(data, client, lab_order_query)
         

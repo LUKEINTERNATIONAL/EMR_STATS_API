@@ -15,7 +15,7 @@ sudo apt-get install libpq-dev
 pip install -r requirements.txt
 
 # install postgres
-sudo apt install postgresql postgresql-contrib
+sudo apt install postgresql-10 postgresql-contrib-10
 # To create user and database
 sudo -u postgres psql
 create database mydb;
@@ -25,16 +25,18 @@ grant all privileges on database mydb to myuser;
 python manage.py makemigrations celery_results
 python3 manage.py makemigrations
 python3 manage.py migrate
+
+# for missing sessions (Run these if you are having problems with migrations)
+python manage.py migrate --fake sessions zero
+python manage.py migrate sessions
 # create user
 python3 manage.py createsuperuser
 
 # To start the application
 python3 manage.py runserver
-# for missing sessions
-python manage.py migrate --fake sessions zero
-python manage.py migrate sessions
 
-# TO create load dump
+
+# TO create dump
 pg_dump -U username -h localhost databasename > sqlfile.sql
 # TO load dump
 psql -h hostname -p port_number -U username -f your_file.sql databasename 

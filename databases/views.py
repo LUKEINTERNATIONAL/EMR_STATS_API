@@ -101,17 +101,22 @@ class FacilityDumps(APIView):
         
         
     def get(self,request,facility_name):
-        command = '~/Facilities_Backups/{}/Backups'.format(facility_name)
+        command = os.path.expanduser("~")+'/Facilities_Backups/{}/Backups'.format(facility_name)
+        if os.path.exists(command) and os.path.isdir(command):
+            pass
+        else:
+            command = os.path.expanduser("~")+'/Facilities_Backups/{}/backup'.format(facility_name)
         dumps = self.get_facility_dumps(command)
         dumps_filtered = []
         for dump in dumps:
             dump_details =dump.split(' ')
+            #Databases.objects.get(facility_name = facility_name).progress
             if(dump_details[0]):
                 dumps_details = {
                                     'dump_size':dump_details[0],
                                     'modified_date': dump_details[1]+" "+dump_details[2],
                                     'dump_name':dump_details[3],
-                                    'progress':Databases.objects.get(facility_name = facility_name).progress,
+                                    'progress':'',
                                     'dump_status':"",
                                 }
                 dumps_filtered.append(dumps_details)
