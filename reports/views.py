@@ -113,7 +113,8 @@ class ViralLoadList(APIView):
         service = ApplicationService()
         query ='''SELECT * FROM public.viral_load v
             INNER JOIN facilities f ON v.facility_id = f.id
-           WHERE viral_load = '1' AND DATE(v.created_at) BETWEEN {} AND {};'''.format(request.GET["start_date"],request.GET["end_date"])
+           WHERE viral_load = '1' AND (DATE(v.created_at) BETWEEN {} AND {} OR (DATE(v.released_date) BETWEEN {} AND {} AND results IS NOT NULL)) ;
+           '''.format(request.GET["start_date"],request.GET["end_date"],request.GET["start_date"],request.GET["end_date"])
         results = service.query_processor(query)
         return JsonResponse({
             'viral_load':results
