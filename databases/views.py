@@ -91,7 +91,7 @@ class FacilityDumps(APIView):
                             'progress':percentage
                         }
                     self.create_dump_details(data)
-                    
+            client.close()       
     def create_dump_details(self,data):
         serializer = DatabasesSerializer(data=data)
         if serializer.is_valid():

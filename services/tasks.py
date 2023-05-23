@@ -33,6 +33,7 @@ def process_remote_data(facility_details):
                 RemoteViralLoad().process_lab_orders(db_data,client,facility_id,remote)
             except yaml.YAMLError as exc:
                 print(exc)
+            client.close()
         else:
             print("Failed to login to  a remote server")
             return False

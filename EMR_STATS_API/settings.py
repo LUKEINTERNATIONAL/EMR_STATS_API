@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'emails',
     'viral_load',
     'zones',
+    'django_extensions',
     'users.apps.UsersConfig',
     'services',
     'django_celery_results',
