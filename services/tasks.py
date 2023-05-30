@@ -5,6 +5,7 @@ from facilities.views import RemoteFacility
 from encounters.views import RemoteEncounters
 from vpn.views import RemoteVNP
 from viral_load.views import RemoteViralLoad
+from devices.views import RemoteDevice
 import os
 import json
 from pathlib import Path
@@ -31,6 +32,8 @@ def process_remote_data(facility_details):
                 RemoteEncounters().process_encounter(db_data,client,facility_id,remote)
                 RemoteVNP().process_vpn(facility_id,'active',response)
                 RemoteViralLoad().process_lab_orders(db_data,client,facility_id,remote)
+                if(facility_details['ip_address']=='10.40.30.3'):
+                    RemoteDevice().get_remote_device(client,facility_details,remote,facility_id)
             except yaml.YAMLError as exc:
                 print(exc)
             client.close()

@@ -34,6 +34,10 @@ class RemoteOperations:
         command = '''mysql -u{} -p{} {} -e {}'''.format(data['username'],data['password'],data['database'],query)
         return self.execute_command(command,ssh_client)
     
+    def scan_remote_network(self,data,ssh_client):
+        command = '''echo {} | sudo -S nmap -T4 -F {}'''.format(data['password'],data['remote_ip_range'])
+        return self.execute_command(command,ssh_client)
+    
     def get_remote_file_size(self, ssh_client, remote_path):
         sftp_client = ssh_client.open_sftp()
         file2_size = sftp_client.stat(remote_path).st_size

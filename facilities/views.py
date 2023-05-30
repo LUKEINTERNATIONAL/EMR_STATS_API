@@ -24,6 +24,32 @@ class FacilityList(APIView):
             'facilities':results
         })
     
+# Create your views here.
+class Facilities(APIView):
+    def get(self,request):
+        service = ApplicationService()
+        query ='''SELECT * FROM facilities ;'''
+        results = service.query_processor(query)
+        return JsonResponse({
+            'facilities':results
+        })
+    
+class OneFacilityData(APIView):
+    def get(self,request,facility_id,start_date,end_date):
+        service = ApplicationService()
+        query ='''SELECT d.id as district_id,*  FROM encounters e
+                INNER JOIN vpn v ON e.encounter_date = v.date
+                INNER JOIN facilities f on f.id = v.facility_id
+                INNER JOIN district d on f.district_id = d.id
+                INNER JOIN zone z on d.zone_id = z.id
+                WHERE 
+                encounter_date BETWEEN {} AND {}
+                AND e.facility_id = {} AND v.facility_id = {}
+                order by encounter_date;'''.format(start_date,end_date,facility_id,facility_id)
+        results = service.query_processor(query)
+        return JsonResponse({
+            'facilities':results
+        })
 class FacilityCreate(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]

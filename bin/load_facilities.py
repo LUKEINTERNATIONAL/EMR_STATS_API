@@ -5,18 +5,18 @@ with open('/var/www/facilities_ips.csv', 'r') as file:
     for row in reader:
         remote = RemoteEncounters()
         facility_details =[{
-            "user_name": "linserver",
-            "password": "lin1088",
+            "user_name": "",
+            "password": "",
             "ip_address": row[0]
         },
         {
-            "user_name": "emruser",
-            "password": "lin@1088",
+            "user_name": "",
+            "password": "",
             "ip_address": row[0]
         },
         {
-            "user_name": "meduser",
-            "password": "letmein",
+            "user_name": "",
+            "password": "",
             "ip_address": row[0]
         }]
         if(remote.process_remote_data(facility_details[0])):

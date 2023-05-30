@@ -85,6 +85,11 @@ class VPNReportList(APIView):
         else:
             columns = 'facility_name,ip_address'
 
+        try:
+            where_facility = '''AND v.facility_id={}'''.format(request.GET["facility_id"])
+        except:
+            where_facility = ''
+
         query = '''SELECT 
                     CONCAT(
                         FLOOR(CAST(total_seconds AS integer) / 3600), ' hours, ',
@@ -97,9 +102,9 @@ class VPNReportList(APIView):
                         {}
                     FROM vpn v
                         INNER JOIN facilities f on f.id = v.facility_id 
-                        where date BETWEEN {} AND {} group by 
+                        where date BETWEEN {} AND {} {} group by 
                         {}
-                    ) AS subquery;'''.format(columns,columns,request.GET["start_date"],request.GET["end_date"],columns)
+                    ) AS subquery;'''.format(columns,columns,request.GET["start_date"],request.GET["end_date"],where_facility,columns)
 
         results = service.query_processor(query)
         return JsonResponse({
@@ -111,10 +116,15 @@ class ViralLoadList(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self,request):
         service = ApplicationService()
+        try:
+            where_facility = '''AND v.facility_id={}'''.format(request.GET["facility_id"])
+        except:
+            where_facility = ''
         query ='''SELECT * FROM public.viral_load v
             INNER JOIN facilities f ON v.facility_id = f.id
-           WHERE viral_load = '1' AND (DATE(v.created_at) BETWEEN {} AND {} OR (DATE(v.released_date) BETWEEN {} AND {} AND results IS NOT NULL)) ;
-           '''.format(request.GET["start_date"],request.GET["end_date"],request.GET["start_date"],request.GET["end_date"])
+           WHERE viral_load = '1' AND (DATE(v.created_at) BETWEEN {} AND {} OR (DATE(v.released_date) BETWEEN {} AND {} AND results IS NOT NULL)) 
+           {}
+           ;'''.format(request.GET["start_date"],request.GET["end_date"],request.GET["start_date"],request.GET["end_date"],where_facility)
         results = service.query_processor(query)
         return JsonResponse({
             'viral_load':results
