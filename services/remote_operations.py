@@ -35,7 +35,15 @@ class RemoteOperations:
         return self.execute_command(command,ssh_client)
     
     def scan_remote_network(self,data,ssh_client):
-        command = '''echo {} | sudo -S nmap -T4 -F {}'''.format(data['password'],data['remote_ip_range'])
+        command = '''echo {} | sudo -S nmap -p- -T4 {}'''.format(data['password'],data['remote_ip_range'])
+        return self.execute_command(command,ssh_client)
+    
+    def scan_network_interface(self,ip_address,ssh_client):
+        command = '''ip -o addr show | awk '/inet {}/ {{print $2}}' '''.format(ip_address)
+        return self.execute_command(command,ssh_client)
+    
+    def scan_bandwidth(self,network_interface,ssh_client):
+        command = '''cat /proc/net/dev | grep {} | awk -F':' '{{print $2}}' | awk '{{print $1, $9}}' '''.format(network_interface)
         return self.execute_command(command,ssh_client)
     
     def get_remote_file_size(self, ssh_client, remote_path):

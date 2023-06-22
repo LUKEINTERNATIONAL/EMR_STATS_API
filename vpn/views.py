@@ -93,11 +93,18 @@ class VPNDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 class RemoteVNP(APIView):
+    def getBandwidth(self,remote,client,ip_address):
+        network_interface = remote.scan_network_interface(ip_address,client)
+        interface_name = network_interface[0].strip()
+        tran_reci =remote.scan_bandwidth(interface_name,client)
+        strip_tran_reci = tran_reci[0].strip()
+        return list(map(int, strip_tran_reci.split()))
+        
     def insert_vpnTmp(self,vpn_results):
         vpn_temp = VPNTempCreate()
         vpn_temp.post(vpn_results)
          
-    def process_vpn(self,facility_id,status,response):
+    def process_vpn(self,facility_id,status,response,bandwidth):
         try:
             vpn_results = VPN.objects.get(date=datetime.today().strftime('%Y-%m-%d'), facility_id=facility_id)
         except VPN.DoesNotExist:
@@ -111,6 +118,8 @@ class RemoteVNP(APIView):
             "start_down_time":datetime.today().strftime('%Y-%m-%d %H:%M:%S'),
             "end_down_time":datetime.today().strftime('%Y-%m-%d %H:%M:%S'),
             "response_time" : response,
+            "received_bandwidth" : bandwidth[0],
+            "transmitted_bandwidth" : bandwidth[1],
             "vpn_status" : status,
             "date"       : datetime.today().strftime('%Y-%m-%d')
         }

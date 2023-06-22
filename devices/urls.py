@@ -1,11 +1,10 @@
 from django.contrib import admin
 from django.urls import path
-from facilities.views import FacilityCreate, FacilityList, FacilityDetail, ViralLoadStatus, OneFacilityData, Facilities
+from devices.views import OneFacilityData, Devices, OneFacilityData, DevicesService
 
 urlpatterns = [
-    path('list/', FacilityList.as_view()),
-    path('', Facilities.as_view()),
+    path('list/', Devices.as_view()),
+    path('list_devices_service', DevicesService.as_view()),
+    path('', OneFacilityData.as_view()),
     path('one_facility_data/<str:facility_id>/<str:start_date>/<str:end_date>', OneFacilityData.as_view()),
-    path('<int:pk>',FacilityDetail.as_view()),
-    path('update_viral_load', ViralLoadStatus.as_view()),
 ]

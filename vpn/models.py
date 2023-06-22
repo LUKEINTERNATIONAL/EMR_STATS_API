@@ -8,6 +8,8 @@ class VPN(models.Model):
     start_down_time = models.CharField(max_length=100,blank=True)
     end_down_time = models.CharField(max_length=100,blank=True)
     response_time = models.CharField(max_length=100,blank=True)
+    received_bandwidth = models.CharField(max_length=100,blank=True)
+    transmitted_bandwidth = models.CharField(max_length=100,blank=True)
     vpn_status = models.CharField(max_length=100)
     vpn_sms_status = models.CharField(max_length=100,blank=True)
     date = models.CharField(max_length=100)

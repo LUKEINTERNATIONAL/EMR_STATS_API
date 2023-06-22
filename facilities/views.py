@@ -144,7 +144,17 @@ class RemoteFacility():
                         INNER JOIN location l on gp.property_value = l.location_id
                         where property ='current_health_center_id';"'''
         return remote.execute_query(data, client, facility_name_query)
+
+    def get_remote_dde(self,data,client,remote):
+        dde_name_query = '''"SELECT property_value FROM global_property where property = 'dde_enabled';"'''
+        dde_name = remote.execute_query(data, client, dde_name_query)
+        return dde_name[1].rstrip('\n')
     
+    def save_dde(self,facility_id,data,client,remote):
+        facility = Facility.objects.get(id=facility_id)
+        facility.dde_enabled = self.get_remote_dde(data,client,remote)
+        facility.save()
+
     def check_facility_existence(self,facility_name,facility_details):
         if facility_name:
             facility_name = facility_name[1].rstrip('\n')

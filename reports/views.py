@@ -80,10 +80,16 @@ class VPNReportList(APIView):
     
     def get(self,request):
         service = ApplicationService()
-        if(request.GET["start_date"] == request.GET["end_date"]):
-            columns = 'facility_name,ip_address,vpn_status,date'
+        if request.GET["start_date"] == request.GET["end_date"]:
+            columns = 'facility_name,ip_address,vpn_status,date,response_time,transmitted_bandwidth,received_bandwidth'
         else:
             columns = 'facility_name,ip_address'
+
+        try:
+            if request.GET["per_day"] == 'true':
+                columns = 'facility_name,ip_address,vpn_status,date,response_time,transmitted_bandwidth,received_bandwidth'
+        except:
+            pass
 
         try:
             where_facility = '''AND v.facility_id={}'''.format(request.GET["facility_id"])

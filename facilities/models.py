@@ -10,6 +10,7 @@ class Facility(models.Model):
     latitude = models.CharField(max_length=100,blank=True)
     longitude = models.CharField(max_length=100,blank=True)
     viral_load = models.CharField(max_length=100,blank=True)
+    dde_enabled = models.CharField(max_length=100,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
