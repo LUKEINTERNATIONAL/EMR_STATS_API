@@ -1,0 +1,6 @@
+cd /opt/
+tar xf nmap-7.94.tar.bz2
+cd /opt/nmap-7.94
+./configure
+sudo make
+sudo make install

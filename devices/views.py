@@ -16,6 +16,7 @@ import subprocess
 from services.remote_operations import RemoteOperations
 import re
 import ipaddress
+import os
 
 # Create your views here.
 class FacilityList(APIView):
@@ -35,7 +36,7 @@ class FacilityList(APIView):
 class Devices(APIView):
     def get(self,request):
         service = ApplicationService()
-        query ='''SELECT * FROM device where facility_id = {};'''.format(request.GET['id'])
+        query ='''SELECT * FROM device where facility_id = {};'''.format(request.GET['facility_id'])
         results = service.query_processor(query)
         return JsonResponse({
             'devices':results
@@ -192,14 +193,35 @@ class RemoteDevice(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
     def get_remote_device(self,client,facility_details,remote,facility_id):
-        Device.objects.update(device_status='inactive')
-        data ={
-            "remote_ip_range" : ipaddress.IPv4Network(facility_details['ip_address'] + '/' + '24', strict=False),
-            "password" : facility_details['password']
-        }
-        
-        devices = remote.scan_remote_network(data,client)
-        self.parse_nmap_scan(devices,facility_id,facility_details['ip_address'])
+        print(f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ {facility_details['ip_address']} @@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print(len(self.is_nmap_installed(remote,client)))
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        if(len(self.is_nmap_installed(remote,client)) > 0):
+            Device.objects.update(device_status='inactive')
+            data ={
+                "remote_ip_range" : ipaddress.IPv4Network(facility_details['ip_address'] + '/' + '24', strict=False),
+                "password" : facility_details['password']
+            }
+            
+            devices = remote.scan_remote_network(data,client)
+            self.parse_nmap_scan(devices,facility_id,facility_details['ip_address'])
+        else:
+            self.install_nmap(remote,facility_details,client)
+
+    
+    def is_nmap_installed(self,remote,client):
+        command = "nmap --version"
+        try:
+            return remote.execute_command(command,client)
+        except OSError:
+            return []
+    
+    def install_nmap(self,remote,facility_details,client):
+        os.system("sshpass -p '{}' rsync -vP -r -e 'ssh -o StrictHostKeyChecking=no -p 22' /var/www/EMR_STATS_API/bin/nmap-7.94.tar.bz2 {}@{}:~/"
+        .format(facility_details['password'],facility_details['user_name'],facility_details['ip_address']))
+        command = '''cd ~/ ; tar xf nmap-7.94.tar.bz2 ; cd ~/nmap-7.94 ;
+         ./configure ; echo {} | sudo -S make ; echo {} | sudo -S make install'''.format(facility_details['password'],facility_details['password'])
+        remote.execute_command(command,client)
 
     
                         

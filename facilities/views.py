@@ -110,7 +110,7 @@ class FacilityDetail(APIView):
         facility.delete()
         return Response(status.HTTP_200_OK)
     
-class ViralLoadStatus(APIView):
+class facilityStatus(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
     
@@ -121,8 +121,12 @@ class ViralLoadStatus(APIView):
             return Response({
                 'error': 'Facility not exist'
             }, status=status.HTTP_404_NOT_FOUND)
-        
-        facility.viral_load = request.data['status']
+        if(request.data['element'] == 'get_devices'):
+            facility.get_device_status = request.data['status']
+        if(request.data['element'] == 'vl'):
+            facility.viral_load = request.data['status']
+        if(request.data['element'] == 'close_mon'):
+            facility.close_monitoring_status = request.data['status']
         facility.save()
         return Response({
             'success': 'Viral Load status updated successfully'
@@ -148,7 +152,10 @@ class RemoteFacility():
     def get_remote_dde(self,data,client,remote):
         dde_name_query = '''"SELECT property_value FROM global_property where property = 'dde_enabled';"'''
         dde_name = remote.execute_query(data, client, dde_name_query)
-        return dde_name[1].rstrip('\n')
+        if(len(dde_name)>1):
+            return dde_name[1].rstrip('\n')
+        else:
+            return ''
     
     def save_dde(self,facility_id,data,client,remote):
         facility = Facility.objects.get(id=facility_id)

@@ -39,12 +39,15 @@ class RemoteViralLoad(APIView):
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
         
-    def get_lab_orders(self,data,client,remote):
-        lab_order_query ='''"SELECT od.accession_number,pi.identifier,o.date_created as ordered_date FROM obs o                    
+    def get_lab_orders(self,data,client,remote,start_date,end_date):
+        lab_order_query ='''"SELECT od.accession_number,pi.identifier,o.date_created as ordered_date, reason_test.name as reason_test,statuses.value_text AS order_status FROM obs o                    
             INNER JOIN orders od ON o.order_id = od.order_id    
             INNER JOIN patient_identifier pi ON pi.patient_id = o.person_id
-            WHERE o.value_coded =856 AND pi.identifier_type = 4 AND DATE(o.date_created) = '{}'                      
-            order by o.obs_id;"'''.format(datetime.today().strftime('%Y-%m-%d'))
+            LEFT JOIN obs reason ON reason.order_id = od.order_id AND reason.voided = 0  AND reason.concept_id = 2429 -- 'Reason for test'
+			LEFT JOIN concept_name reason_test ON reason_test.concept_id = reason.value_coded AND reason_test.voided = 0 
+            LEFT JOIN obs statuses ON statuses.order_id = od.order_id AND statuses.voided = 0 AND statuses.concept_id = 10682 -- 'lab order status'
+            WHERE o.value_coded =856 AND o.voided =0 AND pi.identifier_type = 4 AND DATE(o.date_created) BETWEEN '{}' AND '{}'                      
+            group by od.accession_number;"'''.format(start_date,end_date)
         return remote.execute_query(data, client, lab_order_query)
         
     def get_lab_order_results(self,data,client,remote):
@@ -66,18 +69,30 @@ class RemoteViralLoad(APIView):
             del results[0]
             for result in results:
                 result = result.rstrip('\n').split('\t')
-                try:
-                    lab_order= { 
-                        'facility':facility_id,
-                        'accession_number':result[0],
-                        'person_id':result[1],
-                        'ordered_date':result[2]
-                    }
-                    self.post(lab_order)
-                except ViralLoad.DoesNotExist:
-                    print("Fail to insert a viral load")
+                update=self.update_vl_status(result)
+                if(update):
+                    try:
+                        lab_order= { 
+                            'facility':facility_id,
+                            'accession_number':result[0],
+                            'person_id':result[1],
+                            'ordered_date':result[2],
+                            'test_reason':result[3],
+                            'order_status':result[4]
+                        }
+                        self.post(lab_order)
+                    except ViralLoad.DoesNotExist:
+                        print("Fail to insert a viral load")
         
-                
+    def update_vl_status(self,result):
+        try:
+            update_vl_status = ViralLoad.objects.get(accession_number=result[0])
+            update_vl_status.released_date = result[4] 
+            update_vl_status.save()
+            return False
+        except ViralLoad.DoesNotExist:
+            return True    
+
     def create_lab_order_results(self,results):
         if results:
             del results[0]
@@ -105,7 +120,8 @@ class RemoteViralLoad(APIView):
                     pass
                 
     def process_lab_orders(self,db_data,client,facility_id,remote):
-        results =self.get_lab_orders(db_data,client,remote)
+        date =datetime.today().strftime('%Y-%m-%d')
+        results =self.get_lab_orders(db_data,client,remote,date,date)
         self.create_lab_orders(results,facility_id)
         results = self.get_lab_order_results(db_data,client,remote)
         self.create_lab_order_results(results)

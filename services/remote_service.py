@@ -26,6 +26,7 @@ class RemoteService(APIView):
             "user_name" : facilities[count].user_name,
             "password" : facilities[count].password,
             "ip_address" : facilities[count].ip_address,
-            "district_id" : facilities[count].district_id
+            "district_id" : facilities[count].district_id,
+            "get_device_status" : facilities[count].get_device_status
             }
             process_remote_data.delay(facility_data)

@@ -53,6 +53,21 @@ class UserView(APIView):
             'users':results
         })
     
+class HisOfficer(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request): # list user
+        service = ApplicationService()
+        query ='''SELECT * FROM users_customuser u 
+        LEFT JOIN district d on d.id = u.district_id
+        LEFT JOIN zone z on z.id = d.zone_id
+        WHERE u.district_id = {}
+        '''.format(request.GET['facility_id'])
+        results = service.query_processor(query)
+        return JsonResponse({
+            'users':results
+        })
+    
     def post(self, request): 
         try:
             data = request.data  
