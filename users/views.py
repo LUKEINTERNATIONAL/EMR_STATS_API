@@ -59,9 +59,8 @@ class HisOfficer(APIView):
     def get(self, request): # list user
         service = ApplicationService()
         query ='''SELECT * FROM users_customuser u 
-        LEFT JOIN district d on d.id = u.district_id
-        LEFT JOIN zone z on z.id = d.zone_id
-        WHERE u.district_id = {}
+        LEFT JOIN facilities f on f.district_id = u.district_id
+        WHERE f.id = {}
         '''.format(request.GET['facility_id'])
         results = service.query_processor(query)
         return JsonResponse({
