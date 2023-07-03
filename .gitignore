@@ -4,5 +4,5 @@
 *__pycache__*
 *.sql
 testing_data.py
-EMR_STATS_API/settings.py
-config.json
+/EMR_STATS_API/settings.py
+/config.json
