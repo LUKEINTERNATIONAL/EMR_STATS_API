@@ -87,7 +87,7 @@ class RemoteViralLoad(APIView):
     def update_vl_status(self,result):
         try:
             update_vl_status = ViralLoad.objects.get(accession_number=result[0])
-            update_vl_status.released_date = result[4] 
+            update_vl_status.order_status = result[4] 
             update_vl_status.save()
             return False
         except ViralLoad.DoesNotExist:
@@ -121,7 +121,7 @@ class RemoteViralLoad(APIView):
                 
     def process_lab_orders(self,db_data,client,facility_id,remote):
         date =datetime.today().strftime('%Y-%m-%d')
-        results =self.get_lab_orders(db_data,client,remote,date,date)
+        results =self.get_lab_orders(db_data,client,remote,'2023-06-26',date)
         self.create_lab_orders(results,facility_id)
         results = self.get_lab_order_results(db_data,client,remote)
         self.create_lab_order_results(results)

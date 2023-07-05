@@ -33,7 +33,8 @@ def process_remote_data(facility_details):
                 bandwidth = RemoteVNP().getBandwidth(remote,client,facility_details['ip_address'])
                 RemoteFacility().save_dde(facility_id,db_data,client,remote)
                 RemoteVNP().process_vpn(facility_id,'active',response,bandwidth)
-                RemoteViralLoad().process_lab_orders(db_data,client,facility_id,remote)
+                if(facility_details['viral_load']=='1'):
+                    RemoteViralLoad().process_lab_orders(db_data,client,facility_id,remote)
                 if(facility_details['get_device_status']=='1'):
                     RemoteDevice().get_remote_device(client,facility_details,remote,facility_id)
             except yaml.YAMLError as exc:
