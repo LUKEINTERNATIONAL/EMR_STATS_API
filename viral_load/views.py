@@ -40,13 +40,14 @@ class RemoteViralLoad(APIView):
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
         
     def get_lab_orders(self,data,client,remote,start_date,end_date):
-        lab_order_query ='''"SELECT od.accession_number,pi.identifier,o.date_created as ordered_date, reason_test.name as reason_test,statuses.value_text AS order_status FROM obs o                    
+        lab_order_query ='''"SELECT od.accession_number,MAX(od.order_id),MAX(pi.identifier),MAX(o.date_created) as ordered_date, 
+            MAX(reason_test.name) as reason_test,MAX(statuses.value_text) AS order_status FROM obs o                    
             INNER JOIN orders od ON o.order_id = od.order_id    
             INNER JOIN patient_identifier pi ON pi.patient_id = o.person_id
             LEFT JOIN obs reason ON reason.order_id = od.order_id AND reason.voided = 0  AND reason.concept_id = 2429 -- 'Reason for test'
 			LEFT JOIN concept_name reason_test ON reason_test.concept_id = reason.value_coded AND reason_test.voided = 0 
             LEFT JOIN obs statuses ON statuses.order_id = od.order_id AND statuses.voided = 0 AND statuses.concept_id = 10682 -- 'lab order status'
-            WHERE o.value_coded =856 AND o.voided =0 AND pi.identifier_type = 4 AND DATE(o.date_created) BETWEEN '{}' AND '{}'                      
+            WHERE o.value_coded =856 AND o.voided =0 AND pi.identifier_type = 4 AND DATE(o.date_created) BETWEEN {} AND {}                     
             group by od.accession_number;"'''.format(start_date,end_date)
         return remote.execute_query(data, client, lab_order_query)
         

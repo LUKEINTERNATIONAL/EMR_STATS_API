@@ -88,7 +88,7 @@ class RemoteEncounters:
         em.save()
    
     def get_remote_encounter_data(self,data,client,remote):
-        usability_query = '''"SELECT p.name as program_name, count(*) as total_encounters,
+        usability_query = '''"SELECT MAX(p.name) as program_name, count(*) as total_encounters,
             count(distinct(patient_id)) as total_patients FROM encounter e 
             INNER JOIN program p on p.program_id = e.program_id 
             WHERE DATE(e.date_created) = '{}' 
