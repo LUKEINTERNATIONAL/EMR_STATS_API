@@ -3,6 +3,7 @@ from django.urls import path
 from facilities.views import FacilityCreate, FacilityList, FacilityDetail, facilityStatus, OneFacilityData, Facilities
 
 urlpatterns = [
+    path('create_facility', FacilityCreate.as_view()),
     path('list/', FacilityList.as_view()),
     path('', Facilities.as_view()),
     path('one_facility_data/<str:facility_id>/<str:start_date>/<str:end_date>', OneFacilityData.as_view()),

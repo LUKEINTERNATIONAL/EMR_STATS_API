@@ -25,10 +25,7 @@ def process_remote_data(facility_details):
         if(client):
             try:
                 db_data = remote.read_emr_db_file(client)
-                if "id" in facility_details:
-                    facility_id = facility_details["id"]
-                else:
-                    facility_id = RemoteFacility().process_facility_data(db_data,client,facility_details,remote)
+                facility_id = RemoteFacility().process_facility_data(db_data,client,facility_details,remote)
                 RemoteEncounters().process_encounter(db_data,client,facility_id,remote)
                 bandwidth = RemoteVNP().getBandwidth(remote,client,facility_details['ip_address'])
                 RemoteFacility().save_dde(facility_id,db_data,client,remote)

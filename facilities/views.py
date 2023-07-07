@@ -162,6 +162,17 @@ class RemoteFacility():
         facility.dde_enabled = self.get_remote_dde(data,client,remote)
         facility.save()
 
+    def update_facility_name(self,facility_name,facility_details):
+        try:
+            facility = Facility.objects.get(ip_address=facility_details['ip_address'])
+        except Facility.DoesNotExist:
+            return Response({
+                'error': 'Facility not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+        facility.facility_name = facility_name
+        facility.save()
+
+    
     def check_facility_existence(self,facility_name,facility_details):
         if facility_name:
             facility_name = facility_name[1].rstrip('\n')
@@ -169,13 +180,20 @@ class RemoteFacility():
                 exisiting_facility = Facility.objects.get(facility_name=facility_name)
             except Facility.DoesNotExist:
                 exisiting_facility =False
+                try:
+                    exisiting_ip = Facility.objects.get(ip_address=facility_details['ip_address'])
+                except Facility.DoesNotExist:
+                    exisiting_ip =False
         else:
             return print(f"can not find remote facility = {facility_name}")
 
         if exisiting_facility:
             return exisiting_facility.id
+        elif(exisiting_ip):
+            self.update_facility_name(facility_name,facility_details)
+            return exisiting_ip.id
         else:
-            return self.create_facility(facility_name,facility_details)
+            return self.create_facility(facility_name,facility_details)  
     
     def process_facility_data(self,db_data,client,facility_details,remote):
         facility_name = self.get_remote_facility_name(db_data,client,remote)
