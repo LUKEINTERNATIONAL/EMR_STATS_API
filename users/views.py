@@ -53,30 +53,17 @@ class UserView(APIView):
             'users':results
         })
     
-class HisOfficer(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    def get(self, request): # list user
-        service = ApplicationService()
-        query ='''SELECT * FROM users_customuser u 
-        LEFT JOIN facilities f on f.district_id = u.district_id
-        WHERE f.id = {}
-        '''.format(request.GET['facility_id'])
-        results = service.query_processor(query)
-        return JsonResponse({
-            'users':results
-        })
-    
-    def post(self, request): 
-        try:
-            data = request.data  
-        except AttributeError:
-            data = request
-        serializer = RegisterRequestSerializer(data=data)
-        if not serializer.is_valid():
-            logging.warning(f"attempt register: Format Error")
-            return Response({"status": "Format Error"}, status=status.HTTP_406_NOT_ACCEPTABLE)
-        data = serializer.validated_data
+    def post(self, request):
+        data = request.data  
+        # try:
+        #     data = request.data  
+        # except AttributeError:
+        #     data = request
+        # serializer = RegisterRequestSerializer(data=data)
+        # if not serializer.is_valid():
+        #     logging.warning(f"attempt register: Format Error")
+        #     return Response({"status": "Format Error"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        # data = serializer.validated_data
         try:
             user = CustomUser.objects.get(username=data["username"])
             logging.warning(f"attempt register: Username Existed")
@@ -129,6 +116,19 @@ class HisOfficer(APIView):
             logging.error(f"attempt delete {pk}: server error")
             return Response({"status": "Username Not Found"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class HisOfficer(APIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request): # list user
+        service = ApplicationService()
+        query ='''SELECT * FROM users_customuser u 
+        LEFT JOIN facilities f on f.district_id = u.district_id
+        WHERE f.id = {}
+        '''.format(request.GET['facility_id'])
+        results = service.query_processor(query)
+        return JsonResponse({
+            'users':results
+        })
 class SingleUserView(APIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
