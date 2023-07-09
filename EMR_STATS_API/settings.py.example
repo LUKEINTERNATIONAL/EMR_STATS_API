@@ -158,9 +158,10 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRONJOBS = [
-    ('*/15 * * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'logs/remote_cronjob.log' + ' 2>&1 ')),
+    ('*/30 * * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'logs/remote_cronjob.log' + ' 2>&1 ')),
+    ('0 */6 * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'logs/remote_cronjob.log' + ' 2>&1 ')),
     ('0 2 * * *', 'EMR_STATS_API.cron.database_sync_job', '>> ' + os.path.join(BASE_DIR,'logs/database_cronjob.log' + ' 2>&1 ')),   
-    ('0 0 12 * * ?', 'EMR_STATS_API.cron.send_messages', '>> ' + os.path.join(BASE_DIR,'logs/send_messages_cronjob.log' + ' 2>&1 '))   
+    ('0 12 * * *', 'EMR_STATS_API.cron.send_messages', '>> ' + os.path.join(BASE_DIR,'logs/send_messages_cronjob.log' + ' 2>&1 '))   
 ]
 CORS_ALLOW_ALL_ORIGINS=True
 

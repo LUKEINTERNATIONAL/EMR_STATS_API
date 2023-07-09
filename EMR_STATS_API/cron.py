@@ -12,18 +12,16 @@ config_data = json.load(open(os.path.join(BASE_DIR,'config.json')))
 remote = RemoteOperations()
 def my_scheduled_job():
     if remote.ping(config_data['vpn_ip']):
-        print("**************************************")
-        print("Start processing data")
-        print(datetime.now())
-        print("**************************************")
         remote_facility= RemoteService()
-        remote_facility.get_all_facility()
-        print("**************************************")
-        print("End processing data")
-        print(datetime.now())
-        print("**************************************")
+        remote_facility.get_all_facility('remote_data')
     else:
-        print("==================== Can not update encounters VPN is Down==================")
+        return False
+
+def get_all_devices():
+    if remote.ping(config_data['vpn_ip']):
+        remote_facility= RemoteService()
+        remote_facility.get_all_facility('remote_devices')
+    else:
         return False
 
 def database_sync_job():

@@ -18,7 +18,7 @@ class RemoteService(APIView):
     def post(self,request):
         return Response(process_remote_data(request.data))
     
-    def get_all_facility(self):
+    def get_all_facility(self,type_data):
         facilities = Facility.objects.all()
         for count,item in enumerate(facilities.values()):
             facility_data = {
@@ -28,6 +28,7 @@ class RemoteService(APIView):
             "ip_address" : facilities[count].ip_address,
             "district_id" : facilities[count].district_id,
             "get_device_status" : facilities[count].get_device_status,
-            "viral_load" : facilities[count].viral_load
+            "viral_load" : facilities[count].viral_load,
+            "type_data":type_data
             }
             process_remote_data.delay(facility_data)
