@@ -3,14 +3,13 @@ from services.remote_operations import RemoteOperations
 from django.http import JsonResponse
 from databases.serializer import DatabasesSerializer
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.views import APIView 
+from users.custom_permissions import CustomPermissionMixin
 from databases.models import Databases
 from django.db import connection
 from service import ApplicationService
 import os
 import subprocess
-from rest_framework import authentication, permissions
 import logging
 from facilities.models import Facility
 from databases.tasks import copy_dumps_task
@@ -22,10 +21,8 @@ from django.http import HttpResponse
 
 logging.basicConfig(level=logging.INFO)
 
-class DownloadDump(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    
+class DownloadDump(CustomPermissionMixin,APIView):
+   
     def get(self,request,dump_name):
         # Construct the full file path
         file_path = os.path.expanduser("~")+'/Facilities_Backups/'+dump_name.replace("+", "/")
@@ -34,10 +31,8 @@ class DownloadDump(APIView):
             response['Content-Disposition'] = 'attachment; filename=' + os.path.basename(file_path)
             return response
         
-class FacilityDumps(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    
+class FacilityDumps(CustomPermissionMixin,APIView):
+   
     def copy_dumps(self):
         facilities =Facility.objects.all()
         for facility in facilities:
@@ -125,10 +120,8 @@ class FacilityDumps(APIView):
         }) 
     
     
-class DumpsOverview(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
- 
+class DumpsOverview(CustomPermissionMixin,APIView):
+   
     def read_facilities_dump(self,path):
         command = "cd {} && du -x --si --time --max-depth=1".format(path)
         return subprocess.check_output(command, shell=True).decode('utf-8').split('\n')

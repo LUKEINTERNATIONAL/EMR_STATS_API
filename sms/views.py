@@ -6,10 +6,10 @@ from facilities.serializer import FacilitySerializer
 from rest_framework.views import APIView 
 from rest_framework.response import Response
 from rest_framework import status
+from users.custom_permissions import CustomPermissionMixin
 from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
-from rest_framework import authentication, permissions
 from vpn_temp.models import VPNTemp
 from vpn.models import VPN
 import requests
@@ -25,10 +25,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 config_data = json.load(open(os.path.join(BASE_DIR,'config.json')))
 # Create your views here.
 
-class SMSDetails(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    
+class SMSDetails(CustomPermissionMixin,APIView):
+   
     def process_sms_messages(self,messages_str):
         massage_arr = messages_str.split(',')
         arr = np.array(massage_arr)

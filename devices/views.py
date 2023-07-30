@@ -7,11 +7,10 @@ from devices.serializer import DeviceServicesSerializer
 from rest_framework.views import APIView 
 from rest_framework.response import Response
 from rest_framework import status
+from users.custom_permissions import CustomPermissionMixin
 from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
-from rest_framework import authentication, permissions
-from scapy.all import ARP, Ether, srp
 import subprocess
 from services.remote_operations import RemoteOperations
 import re
@@ -19,7 +18,7 @@ import ipaddress
 import os
 
 # Create your views here.
-class FacilityList(APIView):
+class FacilityList(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT d.id as district_id,f.id as facility_id,* FROM vpn v 
@@ -33,7 +32,7 @@ class FacilityList(APIView):
         })
     
 # Create your views here.
-class Devices(APIView):
+class Devices(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT * FROM device where facility_id = {};'''.format(request.GET['facility_id'])
@@ -42,7 +41,7 @@ class Devices(APIView):
             'devices':results
         })
     
-class DevicesService(APIView):
+class DevicesService(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT * FROM device_services where device_ip = '{}' ;'''.format(request.GET['ip_address'])
@@ -51,7 +50,7 @@ class DevicesService(APIView):
             'devices':results
         })
     
-class OneFacilityData(APIView):
+class OneFacilityData(CustomPermissionMixin,APIView):
     def get(self,request,facility_id,start_date,end_date):
         service = ApplicationService()
         query ='''SELECT d.id as district_id,*  FROM encounters e
@@ -67,9 +66,7 @@ class OneFacilityData(APIView):
         return JsonResponse({
             'devices':results
         })
-class CreateDevice(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+class CreateDevice(CustomPermissionMixin,APIView):
     
     def post(self,request):
         try:
@@ -83,10 +80,8 @@ class CreateDevice(APIView):
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)    
         
-class RemoteDevice(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-
+class RemoteDevice(CustomPermissionMixin,APIView):
+   
     def process_device(self,data,device_ip,mac_address):
         try:
             exisiting_device = Device.objects.get(device_ip=device_ip,device_mac=mac_address)

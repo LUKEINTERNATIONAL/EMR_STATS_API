@@ -8,6 +8,7 @@ from vpn.models import VPN
 from vpn.serializer import VPNSerializer
 from rest_framework.response import Response
 from rest_framework import status
+from users.custom_permissions import CustomPermissionMixin
 from service import ApplicationService
 from vpn_temp.views import VPNTempCreate
 from services.remote_operations import RemoteOperations
@@ -24,7 +25,7 @@ timezone = pytz.timezone('Africa/Blantyre')
 remote = RemoteOperations()
 # Create your views here.
             
-class VPNCreate(APIView):
+class VPNCreate(CustomPermissionMixin,APIView):
     def post(self,request):
         try:
             data = request.data  
@@ -39,7 +40,7 @@ class VPNCreate(APIView):
             print(serializer.errors)
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
-class VPNList(APIView):
+class VPNList(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT * FROM vpn v INNER JOIN facilities f on f.id = v.facility_id 
@@ -49,19 +50,19 @@ class VPNList(APIView):
             'vpn':results
         })
         
-class InternetStatus(APIView):
+class InternetStatus(CustomPermissionMixin,APIView):
     def get(self,request):
         return JsonResponse({
             'internet':"{}".format(remote.ping(config_data['internet']))
         })
         
-class VPNStatus(APIView):
+class VPNStatus(CustomPermissionMixin,APIView):
     def get(self,request):
         return JsonResponse({
             'vpn':"{}".format(remote.ping(config_data['vpn_ip']))
         })
 
-class VPNDetail(APIView):
+class VPNDetail(CustomPermissionMixin,APIView):
     def get_vpn_by_pk(self,pk):
         try:
             return VPN.objects.get(pk=pk)
@@ -92,7 +93,7 @@ class VPNDetail(APIView):
         facility.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-class RemoteVNP(APIView):
+class RemoteVNP(CustomPermissionMixin,APIView):
     def getBandwidth(self,remote,client,ip_address):
         network_interface = remote.scan_network_interface(ip_address,client)
         interface_name = network_interface[0].strip()

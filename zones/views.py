@@ -5,12 +5,12 @@ from zones.models import Zone
 from rest_framework.views import APIView 
 from rest_framework.response import Response
 from rest_framework import status
+from users.custom_permissions import CustomPermissionMixin
 from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
-from rest_framework import authentication, permissions
 # Create your views here.
-class ZonesList(APIView):
+class ZonesList(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT * FROM zone'''
@@ -19,9 +19,7 @@ class ZonesList(APIView):
             'zones':results
         })
     
-class ZoneCreate(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+class ZoneCreate(CustomPermissionMixin,APIView):
     
     def post(self,request):
         try:
@@ -35,10 +33,8 @@ class ZoneCreate(APIView):
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)    
         
-class ZoneDetail(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    
+class ZoneDetail(CustomPermissionMixin,APIView):
+   
     def get_zone_by_pk(self,pk):
         try:
             return Zone.objects.get(pk=pk)

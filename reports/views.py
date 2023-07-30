@@ -1,18 +1,12 @@
 from django.shortcuts import render
 from facilities.models import Facility
 from rest_framework.views import APIView 
-from rest_framework.response import Response
-from rest_framework import status
+from users.custom_permissions import CustomPermissionMixin
 from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
-from rest_framework import authentication, permissions
 
-# Create your views here.
-class UsabilityReportList(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    
+class UsabilityReportList(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT * FROM encounters e INNER JOIN facilities f on f.id = e.facility_id 
@@ -22,10 +16,7 @@ class UsabilityReportList(APIView):
             'facilities':results
         })
         
-class TotalUsabilityReportList(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    
+class TotalUsabilityReportList(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT facility_name,latitude,longitude ,vpn_status,encounter_date,
@@ -42,9 +33,8 @@ class TotalUsabilityReportList(APIView):
             'facilities':results
         })
         
-class FacilitiesWithCoordinates(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+class FacilitiesWithCoordinates(CustomPermissionMixin,APIView):
+   
     
     def get(self,request):
         service = ApplicationService()
@@ -74,9 +64,8 @@ class FacilitiesWithCoordinates(APIView):
         })
   
         
-class VPNReportList(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+class VPNReportList(CustomPermissionMixin,APIView):
+   
     
     def get(self,request):
         service = ApplicationService()
@@ -117,9 +106,8 @@ class VPNReportList(APIView):
             'facilities':results
         })
         
-class ViralLoadList(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+class ViralLoadList(CustomPermissionMixin,APIView):
+   
     def get(self,request):
         service = ApplicationService()
         try:

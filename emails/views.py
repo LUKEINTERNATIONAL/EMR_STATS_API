@@ -4,12 +4,9 @@ from facilities.models import Facility
 # from encounters.views import RemoteEncounters
 from facilities.serializer import FacilitySerializer
 from rest_framework.views import APIView 
-from rest_framework.response import Response
-from rest_framework import status
 from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
-from rest_framework import authentication, permissions
 from vpn_temp.models import VPNTemp
 from vpn.models import VPN
 import requests
@@ -17,6 +14,7 @@ import json
 import numpy as np
 import math
 from services.tasks import send_sms_email
+from users.custom_permissions import CustomPermissionMixin
 
 service = ApplicationService()
 import os
@@ -25,11 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 config_data = json.load(open(os.path.join(BASE_DIR,'config.json')))
 # Create your views here.
 
-class EmailDetails(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-   
-  
+class EmailDetails(CustomPermissionMixin,APIView):
+    
     def attachments(self):
         return [
                     {

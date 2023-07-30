@@ -20,6 +20,7 @@ from facilities.serializer import FacilitySerializer
 from rest_framework.views import APIView 
 from rest_framework.response import Response
 from rest_framework import status
+from users.custom_permissions import CustomPermissionMixin
 from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
@@ -39,7 +40,7 @@ config_data = json.load(open(os.path.join(BASE_DIR,'config.json')))
 
 
 # Create your views here.
-class VPNTempCreate(APIView):
+class VPNTempCreate(CustomPermissionMixin,APIView):
     def post(self,request):
         try:
             data = request.data  
@@ -54,7 +55,7 @@ class VPNTempCreate(APIView):
             print(serializer.errors)
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
-class VPNTempList(APIView):
+class VPNTempList(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT * FROM vpn_temp v INNER JOIN facilities f on f.id = v.facility_id 
@@ -64,7 +65,7 @@ class VPNTempList(APIView):
             'vpn_temp':results
         })
 
-class VPNTempDetail(APIView):
+class VPNTempDetail(CustomPermissionMixin,APIView):
     def get_vpn_by_pk(self,pk):
         try:
             return VPNTemp.objects.get(pk=pk)

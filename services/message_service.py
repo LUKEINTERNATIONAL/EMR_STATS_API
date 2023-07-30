@@ -5,10 +5,10 @@ from facilities.serializer import FacilitySerializer
 from rest_framework.views import APIView 
 from rest_framework.response import Response
 from rest_framework import status
+from users.custom_permissions import CustomPermissionMixin
 from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
-from rest_framework import authentication, permissions
 from vpn_temp.models import VPNTemp
 from vpn.models import VPN
 import requests
@@ -27,10 +27,8 @@ config_data = json.load(open(os.path.join(BASE_DIR,'config.json')))
 # Create your views here.
 sms = SMSDetails()
 email =EmailDetails()
-class MessageService(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-
+class MessageService(CustomPermissionMixin,APIView):
+   
     def get_staff_message_data(self):
         query ='''  SELECT email,phone,STRING_AGG(facility_name, ', ') AS facilities FROM users_customuser u 
                     INNER JOIN facilities f on f.district_id = u.district_id

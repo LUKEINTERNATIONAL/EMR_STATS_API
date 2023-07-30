@@ -8,11 +8,11 @@ from rest_framework import status
 from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
-from rest_framework import authentication, permissions
+from users.custom_permissions import CustomPermissionMixin
 
 
 # Create your views here.
-class DistrictList(APIView):
+class DistrictList(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT d.id as district_id,z.id as zone_id,* FROM district d
@@ -22,10 +22,7 @@ class DistrictList(APIView):
             'districts':results
         })
     
-class DistrictCreate(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    
+class DistrictCreate(CustomPermissionMixin,APIView):
     def post(self,request):
         try:
             data = request.data  
@@ -39,10 +36,7 @@ class DistrictCreate(APIView):
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)    
             
 
-class DistrictDetail(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    
+class DistrictDetail(CustomPermissionMixin,APIView):
     def get_facility_by_pk(self,pk):
         try:
             return District.objects.get(pk=pk)

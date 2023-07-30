@@ -4,16 +4,14 @@ from encounters.serializer import EncontersSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView 
+from users.custom_permissions import CustomPermissionMixin
 from datetime import datetime
 from encounters.models import Enconters
 from django.db import connection
 from service import ApplicationService
-from rest_framework import authentication, permissions
 
-class EncounterList(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    
+class EncounterList(CustomPermissionMixin,APIView):
+  
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT * FROM encounters e INNER JOIN facilities f on f.id = e.facility_id 
@@ -23,9 +21,7 @@ class EncounterList(APIView):
             'facilities':results
         })
 
-class EncouterDetails(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+class EncouterDetails(CustomPermissionMixin,APIView):
 
     def query_processor(self,query):
         cursor = connection.cursor()
@@ -62,7 +58,7 @@ class EncouterDetails(APIView):
         facility.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-class EcounterCreate(APIView):
+class EcounterCreate(CustomPermissionMixin,APIView):
     def post(self,request):
         try:
             data = request.data  

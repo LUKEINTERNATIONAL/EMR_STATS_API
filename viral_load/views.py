@@ -5,14 +5,12 @@ from viral_load.serializer import ViralLoadSerializer
 from rest_framework.views import APIView 
 from rest_framework.response import Response
 from rest_framework import status
+from users.custom_permissions import CustomPermissionMixin
 from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
-from rest_framework import authentication, permissions
 # Create your views here.
-class ViralLoadList(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+class ViralLoadList(CustomPermissionMixin,APIView):
     
     def get(self,request):
         service = ApplicationService()
@@ -23,9 +21,7 @@ class ViralLoadList(APIView):
             'facilities':results
         })
            
-class RemoteViralLoad(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+class RemoteViralLoad(CustomPermissionMixin,APIView):
     
     def post(self,request):
         try:

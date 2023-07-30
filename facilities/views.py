@@ -5,13 +5,13 @@ from facilities.serializer import FacilitySerializer
 from rest_framework.views import APIView 
 from rest_framework.response import Response
 from rest_framework import status
+from users.custom_permissions import CustomPermissionMixin
 from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
-from rest_framework import authentication, permissions
 
 # Create your views here.
-class FacilityList(APIView):
+class FacilityList(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT d.id as district_id,f.id as facility_id,* FROM vpn v 
@@ -25,7 +25,7 @@ class FacilityList(APIView):
         })
     
 # Create your views here.
-class Facilities(APIView):
+class Facilities(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT * FROM facilities ;'''
@@ -34,7 +34,7 @@ class Facilities(APIView):
             'facilities':results
         })
     
-class OneFacilityData(APIView):
+class OneFacilityData(CustomPermissionMixin,APIView):
     def get(self,request,facility_id,start_date,end_date):
         service = ApplicationService()
         query ='''SELECT d.id as district_id,*  FROM encounters e
@@ -50,10 +50,7 @@ class OneFacilityData(APIView):
         return JsonResponse({
             'facilities':results
         })
-class FacilityCreate(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    
+class FacilityCreate(CustomPermissionMixin,APIView):
     def post(self,request):
         try:
             data = request.data  
@@ -66,10 +63,8 @@ class FacilityCreate(APIView):
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)    
 
-class FacilityDetail(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    
+class FacilityDetail(CustomPermissionMixin,APIView):
+  
     def get_facility_by_pk(self,pk):
         try:
             return Facility.objects.get(pk=pk)
@@ -110,10 +105,8 @@ class FacilityDetail(APIView):
         facility.delete()
         return Response(status.HTTP_200_OK)
     
-class facilityStatus(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
-    
+class facilityStatus(CustomPermissionMixin,APIView):
+   
     def put(self,request):
         try:
             facility = Facility.objects.get(ip_address=request.data['ip_address'])

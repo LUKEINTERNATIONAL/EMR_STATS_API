@@ -1,7 +1,7 @@
 from facilities.models import Facility
 import os
-from rest_framework import authentication, permissions
 from rest_framework.response import Response
+from users.custom_permissions import CustomPermissionMixin
 import os
 import json
 from pathlib import Path
@@ -11,9 +11,7 @@ from services.tasks import process_remote_data
 BASE_DIR = Path(__file__).resolve().parent.parent
 config_data = json.load(open(os.path.join(BASE_DIR,'config.json')))
 
-class RemoteService(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+class RemoteService(CustomPermissionMixin,APIView):
     
     def post(self,request):
         return Response(process_remote_data(request.data))

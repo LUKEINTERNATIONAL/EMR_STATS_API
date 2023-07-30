@@ -1,7 +1,10 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import authentication, permissions
+from rest_framework.permissions import IsAdminUser
+from rest_framework.decorators import permission_classes
 from rest_framework.views import APIView 
+from users.custom_permissions import CustomPermissionMixin
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 import logging
@@ -16,6 +19,8 @@ from django.contrib.auth import login
 logging.basicConfig(level=logging.INFO)      
 
 class LoginAPIView(APIView): 
+    authentication_classes = []
+    permission_classes = []
     def post(self, request):
         serializer = LoginSerializers(data=request.data)
         if serializer.is_valid():
@@ -38,16 +43,21 @@ class LoginAPIView(APIView):
             return Response(
                 {"message": "error", "code": status.HTTP_401_UNAUTHORIZED, "details": ["Invalid credentials"]})
             
-class UserView(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+class UserView(CustomPermissionMixin,APIView):
     
     def get(self, request): # list user
         service = ApplicationService()
-        query ='''SELECT u.id as userid,u.zone_id as is_zone,* FROM users_customuser u 
-        LEFT JOIN district d on d.id = u.district_id
-        LEFT JOIN zone z on z.id = d.zone_id
-        '''
+        if(request.user.is_superuser):
+            query ='''SELECT u.id as userid,u.zone_id as is_zone,* FROM users_customuser u 
+            LEFT JOIN district d on d.id = u.district_id
+            LEFT JOIN zone z on z.id = d.zone_id
+            '''
+        else:
+             query ='''SELECT u.id as userid,u.zone_id as is_zone,* FROM users_customuser u 
+            LEFT JOIN district d on d.id = u.district_id
+            LEFT JOIN zone z on z.id = d.zone_id
+            WHERE u.id = {}
+            '''.format(request.user.id)
         results = service.query_processor(query)
         return JsonResponse({
             'users':results
@@ -116,9 +126,7 @@ class UserView(APIView):
             logging.error(f"attempt delete {pk}: server error")
             return Response({"status": "Username Not Found"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class HisOfficer(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+class HisOfficer(CustomPermissionMixin,APIView):
     def get(self, request): # list user
         service = ApplicationService()
         query ='''SELECT * FROM users_customuser u 
@@ -129,9 +137,7 @@ class HisOfficer(APIView):
         return JsonResponse({
             'users':results
         })
-class SingleUserView(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+class SingleUserView(CustomPermissionMixin,APIView):
     def get(self, request, username):
         try:
             user = User.objects.get(username=username)
