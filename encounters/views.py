@@ -9,13 +9,17 @@ from datetime import datetime
 from encounters.models import Enconters
 from django.db import connection
 from service import ApplicationService
+from services import services
 
 class EncounterList(CustomPermissionMixin,APIView):
   
     def get(self,request):
         service = ApplicationService()
-        query ='''SELECT * FROM encounters e INNER JOIN facilities f on f.id = e.facility_id 
-        WHERE encounter_date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))
+        query ='''SELECT * FROM encounters e 
+        INNER JOIN facilities f on f.id = e.facility_id 
+        LEFT JOIN district d on f.district_id = d.id
+        LEFT JOIN zone z on d.zone_id = z.id 
+        WHERE encounter_date = '{}' {}; '''.format(datetime.today().strftime('%Y-%m-%d'),services.current_user_where(request))
         results = service.query_processor(query)
         return JsonResponse({
             'facilities':results

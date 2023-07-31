@@ -9,16 +9,19 @@ from users.custom_permissions import CustomPermissionMixin
 from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
+from services import services
 
 # Create your views here.
 class FacilityList(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
+            
         query ='''SELECT d.id as district_id,f.id as facility_id,* FROM vpn v 
         INNER JOIN facilities f on f.id = v.facility_id
         INNER JOIN district d on f.district_id = d.id
         INNER JOIN zone z on d.zone_id = z.id 
-        WHERE date = '{}';'''.format(datetime.today().strftime('%Y-%m-%d'))
+        WHERE date = '{}' {}; '''.format(datetime.today().strftime('%Y-%m-%d'),services.current_user_where(request))
+
         results = service.query_processor(query)
         return JsonResponse({
             'facilities':results
@@ -28,7 +31,14 @@ class FacilityList(CustomPermissionMixin,APIView):
 class Facilities(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
-        query ='''SELECT * FROM facilities ;'''
+        where_clause = ''
+        if(request.user.zone_id is not 0):
+            where_clause = ''' WHERE d.zone_id = {}'''.format(request.user.zone_id)
+        elif(request.user.district_id is not 0):
+            where_clause = ''' WHERE f.district_id = {}'''.format(request.user.district_id)
+        query ='''SELECT f.* FROM facilities f
+                INNER JOIN district d on f.district_id = d.id
+                INNER JOIN zone z on d.zone_id = z.id {};'''.format(where_clause)
         results = service.query_processor(query)
         return JsonResponse({
             'facilities':results
@@ -44,8 +54,8 @@ class OneFacilityData(CustomPermissionMixin,APIView):
                 INNER JOIN zone z on d.zone_id = z.id
                 WHERE 
                 encounter_date BETWEEN {} AND {}
-                AND e.facility_id = {} AND v.facility_id = {}
-                order by encounter_date;'''.format(start_date,end_date,facility_id,facility_id)
+                AND e.facility_id = {} AND v.facility_id = {} {}
+                order by encounter_date;'''.format(start_date,end_date,facility_id,facility_id,services.current_user_where(request))
         results = service.query_processor(query)
         return JsonResponse({
             'facilities':results

@@ -20,6 +20,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 config_data = json.load(open(os.path.join(BASE_DIR,'config.json')))
 timezone = pytz.timezone('Africa/Blantyre')
+from services import services
 
 
 remote = RemoteOperations()
@@ -43,8 +44,12 @@ class VPNCreate(CustomPermissionMixin,APIView):
 class VPNList(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
-        query ='''SELECT * FROM vpn v INNER JOIN facilities f on f.id = v.facility_id 
-        WHERE date = '{}'; '''.format(datetime.today().strftime('%Y-%m-%d'))
+        
+        query ='''SELECT * FROM vpn v 
+        INNER JOIN facilities f on f.id = v.facility_id 
+        LEFT JOIN district d on f.district_id = d.id
+        LEFT JOIN zone z on d.zone_id = z.id 
+        WHERE date = '{}' {}; '''.format(datetime.today().strftime('%Y-%m-%d'),services.current_user_where(request))
         results = service.query_processor(query)
         return JsonResponse({
             'vpn':results

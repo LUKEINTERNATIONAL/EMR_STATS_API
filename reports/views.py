@@ -5,12 +5,17 @@ from users.custom_permissions import CustomPermissionMixin
 from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
+from services import services
 
 class UsabilityReportList(CustomPermissionMixin,APIView):
     def get(self,request):
         service = ApplicationService()
-        query ='''SELECT * FROM encounters e INNER JOIN facilities f on f.id = e.facility_id 
-        WHERE encounter_date BETWEEN {} AND {}; '''.format(request.GET["start_date"],request.GET["end_date"])
+        query ='''SELECT * FROM encounters e 
+        INNER JOIN facilities f on f.id = e.facility_id 
+        LEFT JOIN district d on f.district_id = d.id
+        LEFT JOIN zone z on d.zone_id = z.id 
+        WHERE encounter_date BETWEEN {} AND {} {}; 
+        '''.format(request.GET["start_date"],request.GET["end_date"],services.current_user_where(request))
         results = service.query_processor(query)
         return JsonResponse({
             'facilities':results
@@ -24,18 +29,18 @@ class TotalUsabilityReportList(CustomPermissionMixin,APIView):
             FROM encounters e 
             INNER JOIN facilities f on f.id = e.facility_id 
             INNER JOIN vpn v on f.id = v.facility_id 
-            WHERE encounter_date BETWEEN {} AND {}
+            LEFT JOIN district d on f.district_id = d.id
+            LEFT JOIN zone z on d.zone_id = z.id 
+            WHERE encounter_date BETWEEN {} AND {} {}
             group by facility_name,latitude,longitude,vpn_status,encounter_date;
-        '''.format(request.GET["start_date"],request.GET["end_date"])
+        '''.format(request.GET["start_date"],request.GET["end_date"],services.current_user_where(request))
         
         results = service.query_processor(query)
         return JsonResponse({
             'facilities':results
         })
         
-class FacilitiesWithCoordinates(CustomPermissionMixin,APIView):
-   
-    
+class FacilitiesWithCoordinates(CustomPermissionMixin,APIView):    
     def get(self,request):
         service = ApplicationService()
         query ='''SELECT 
@@ -49,14 +54,16 @@ class FacilitiesWithCoordinates(CustomPermissionMixin,APIView):
             FROM facilities f 
             INNER JOIN encounters e on f.id = e.facility_id 
             INNER JOIN vpn v on f.id = v.facility_id 
+            LEFT JOIN district d on f.district_id = d.id
+            LEFT JOIN zone z on d.zone_id = z.id 
             WHERE latitude !='' AND longitude !='' 
 			AND date BETWEEN {} AND {} 
-			AND encounter_date BETWEEN {} AND {}  
+			AND encounter_date BETWEEN {} AND {}  {}
             group by 
 			facility_name,
 			latitude,
 			longitude,vpn_status,encounter_date;
-        '''.format(request.GET["start_date"],request.GET["end_date"],request.GET["start_date"],request.GET["end_date"])
+        '''.format(request.GET["start_date"],request.GET["end_date"],request.GET["start_date"],request.GET["end_date"],services.current_user_where(request))
         
         results = service.query_processor(query)
         return JsonResponse({
@@ -97,9 +104,11 @@ class VPNReportList(CustomPermissionMixin,APIView):
                         {}
                     FROM vpn v
                         INNER JOIN facilities f on f.id = v.facility_id 
-                        where date BETWEEN {} AND {} {} group by 
+                        LEFT JOIN district d on f.district_id = d.id
+                        LEFT JOIN zone z on d.zone_id = z.id 
+                        where date BETWEEN {} AND {} {} {} group by 
                         {}
-                    ) AS subquery;'''.format(columns,columns,request.GET["start_date"],request.GET["end_date"],where_facility,columns)
+                    ) AS subquery;'''.format(columns,columns,request.GET["start_date"],request.GET["end_date"],where_facility,services.current_user_where(request),columns)
 
         results = service.query_processor(query)
         return JsonResponse({
@@ -116,9 +125,11 @@ class ViralLoadList(CustomPermissionMixin,APIView):
             where_facility = ''
         query ='''SELECT * FROM public.viral_load v
             INNER JOIN facilities f ON v.facility_id = f.id
+            LEFT JOIN district d on f.district_id = d.id
+            LEFT JOIN zone z on d.zone_id = z.id 
            WHERE viral_load = '1' AND (DATE(v.created_at) BETWEEN {} AND {} OR (DATE(v.released_date) BETWEEN {} AND {} AND results IS NOT NULL)) 
-           {}
-           ;'''.format(request.GET["start_date"],request.GET["end_date"],request.GET["start_date"],request.GET["end_date"],where_facility)
+           {} {}
+           ;'''.format(request.GET["start_date"],request.GET["end_date"],request.GET["start_date"],request.GET["end_date"],where_facility,services.current_user_where(request))
         results = service.query_processor(query)
         return JsonResponse({
             'viral_load':results
