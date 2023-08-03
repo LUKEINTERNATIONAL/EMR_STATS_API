@@ -143,7 +143,7 @@ class RemoteVNP(CustomPermissionMixin,APIView):
             if(vpn_results.vpn_status == status):
                 vpn_data.pop('start_down_time')
             else:
-                vpn_data['start_down_time'] =self.get_new_start_downtime(vpn_results.start_down_time,vpn_results.end_down_time)
+                vpn_data['start_down_time'] =services.get_new_start_datetime(vpn_results.start_down_time,vpn_results.end_down_time)
             vpn.put(vpn_data,vpn_results.id)
             print("vpn status updated with downtime")
         else:
@@ -151,16 +151,7 @@ class RemoteVNP(CustomPermissionMixin,APIView):
             vpn.post(vpn_data)
             print("vpn status created")
             
-    def get_new_start_downtime(self,start_time_str,end_time_str):
-        start_time = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S')
-        end_time = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M:%S')
-        seconds = (end_time - start_time).total_seconds()
-        duration_hours = seconds // 3600
-        duration_minutes = (seconds % 3600) // 60
-        duration = timedelta(hours=duration_hours, minutes=duration_minutes)
-        current_time = datetime.now(timezone)
-        end_time = current_time - duration
-        return end_time.strftime('%Y-%m-%d %H:%M:%S')
+    
 
       
 

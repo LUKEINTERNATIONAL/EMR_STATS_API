@@ -30,4 +30,5 @@ urlpatterns = [
     path('databases/', include('databases.urls')),
     path('vpn/', include('vpn.urls')),    
     path('devices/', include('devices.urls')),    
+    path('trackusers/', include('trackusers.urls')),   
 ]

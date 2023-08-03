@@ -6,10 +6,11 @@ from service import ApplicationService
 from datetime import datetime
 from django.http import JsonResponse
 from services import services
+from trackusers.models import TrackUsers
 
+service=ApplicationService()
 class UsabilityReportList(CustomPermissionMixin,APIView):
     def get(self,request):
-        service = ApplicationService()
         query ='''SELECT * FROM encounters e 
         INNER JOIN facilities f on f.id = e.facility_id 
         LEFT JOIN district d on f.district_id = d.id
@@ -23,7 +24,6 @@ class UsabilityReportList(CustomPermissionMixin,APIView):
         
 class TotalUsabilityReportList(CustomPermissionMixin,APIView):
     def get(self,request):
-        service = ApplicationService()
         query ='''SELECT facility_name,latitude,longitude ,vpn_status,encounter_date,
             SUM(total_patients) as total_patients, SUM(total_encounters) as total_encounters 
             FROM encounters e 
@@ -42,7 +42,6 @@ class TotalUsabilityReportList(CustomPermissionMixin,APIView):
         
 class FacilitiesWithCoordinates(CustomPermissionMixin,APIView):    
     def get(self,request):
-        service = ApplicationService()
         query ='''SELECT 
                         facility_name,
                         latitude,
@@ -75,7 +74,6 @@ class VPNReportList(CustomPermissionMixin,APIView):
    
     
     def get(self,request):
-        service = ApplicationService()
         if request.GET["start_date"] == request.GET["end_date"]:
             columns = 'facility_name,ip_address,vpn_status,date,response_time,transmitted_bandwidth,received_bandwidth'
         else:
@@ -118,7 +116,6 @@ class VPNReportList(CustomPermissionMixin,APIView):
 class ViralLoadList(CustomPermissionMixin,APIView):
    
     def get(self,request):
-        service = ApplicationService()
         try:
             where_facility = '''AND v.facility_id={}'''.format(request.GET["facility_id"])
         except:
@@ -133,4 +130,38 @@ class ViralLoadList(CustomPermissionMixin,APIView):
         results = service.query_processor(query)
         return JsonResponse({
             'viral_load':results
+        })
+    
+class TrackSystemUser(CustomPermissionMixin,APIView):
+    def get(self,request):
+        where_clause = ''
+        if(request.user.zone_id is not 0):
+            where_clause = ''' AND d.zone_id = {} OR u.zone_id = 0'''.format(request.user.zone_id)
+        elif(request.user.district_id is not 0):
+            where_clause = ''' AND u.id = {}'''.format(request.user.id)
+        columns = 'user_id,name,district,last_login'
+
+        query ='''
+        SELECT 
+                    CONCAT(
+                        FLOOR(CAST(total_seconds AS integer) / 3600), ' hours, ',
+                        FLOOR((CAST(total_seconds AS integer) % 3600) / 60), ' minutes'
+                    ) AS total_time,
+                    {}
+                    FROM (
+                    SELECT 
+                        SUM(EXTRACT(EPOCH FROM (logout_time::timestamp - login_time::timestamp))) AS total_seconds,
+                        {}
+                    FROM track_users t
+                    INNER JOIN users_customuser u ON u.id = t.user_id
+                    LEFT JOIN district d on u.district_id = d.id
+                    LEFT JOIN zone z on d.zone_id = z.id
+                    WHERE DATE(t.created_at) BETWEEN {} AND {} {} group by 
+                        {}
+                    ) AS subquery;
+        
+        '''.format(columns,columns,request.GET["start_date"],request.GET["end_date"],where_clause,columns)
+        results = service.query_processor(query)
+        return JsonResponse({
+            'track_user':results
         })
