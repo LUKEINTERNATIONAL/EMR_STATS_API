@@ -136,7 +136,7 @@ class TrackSystemUser(CustomPermissionMixin,APIView):
     def get(self,request):
         where_clause = ''
         if(request.user.zone_id is not 0):
-            where_clause = ''' AND d.zone_id = {} OR u.zone_id = 0'''.format(request.user.zone_id)
+            where_clause = ''' AND u.zone_id = {} OR u.zone_id = 0'''.format(request.user.zone_id)
         elif(request.user.district_id is not 0):
             where_clause = ''' AND u.id = {}'''.format(request.user.id)
         columns = 'user_id,name,district,last_login'

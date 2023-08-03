@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-j9xy3u+os)508jhy+)258lg&!$o08hnodpc89#1!$rmd3$bdbw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0']
+ALLOWED_HOSTS = ['127.0.0.1','0.0.0.0']
 
 
 # Application definition
@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'emails',
     'viral_load',
     'zones',
+    'trackusers',
     'django_extensions',
     'users.apps.UsersConfig',
     'services',
@@ -71,7 +72,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "django.middleware.common.CommonMiddleware"
+    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = 'EMR_STATS_API.urls'
@@ -87,6 +88,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django_auto_logout.context_processors.auto_logout_client',
             ],
         },
     },
@@ -140,7 +142,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Blantyre'
 
 USE_I18N = True
 
@@ -159,7 +161,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRONJOBS = [
     ('*/30 * * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'logs/remote_cronjob.log' + ' 2>&1 ')),
-    ('0 */6 * * *', 'EMR_STATS_API.cron.my_scheduled_job', '>> ' + os.path.join(BASE_DIR,'logs/remote_cronjob.log' + ' 2>&1 ')),
+    ('0 */6 * * *', 'EMR_STATS_API.cron.get_all_devices', '>> ' + os.path.join(BASE_DIR,'logs/remote_cronjob.log' + ' 2>&1 ')),
     ('0 2 * * *', 'EMR_STATS_API.cron.database_sync_job', '>> ' + os.path.join(BASE_DIR,'logs/database_cronjob.log' + ' 2>&1 ')),   
     ('0 12 * * *', 'EMR_STATS_API.cron.send_messages', '>> ' + os.path.join(BASE_DIR,'logs/send_messages_cronjob.log' + ' 2>&1 '))   
 ]
@@ -193,3 +195,13 @@ AUTHENTICATION_BACKENDS = (
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'django-cache'
 SENDFILE_BACKEND = 'sendfile.backends.xsendfile'
+
+REST_FRAMEWORK  ={
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication', 
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated'
+    ]
+}
+
