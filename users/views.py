@@ -52,6 +52,12 @@ class UserView(CustomPermissionMixin,APIView):
             LEFT JOIN district d on d.id = u.district_id
             LEFT JOIN zone z on z.id = d.zone_id
             '''
+        elif(request.user.zone_id is not 0):
+             query ='''SELECT u.id as userid,u.zone_id as is_zone,* FROM users_customuser u 
+            LEFT JOIN district d on d.id = u.district_id
+            LEFT JOIN zone z on z.id = d.zone_id
+            WHERE z.id = {}
+            '''.format(request.user.zone_id)
         else:
              query ='''SELECT u.id as userid,u.zone_id as is_zone,* FROM users_customuser u 
             LEFT JOIN district d on d.id = u.district_id
