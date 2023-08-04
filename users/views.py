@@ -101,7 +101,7 @@ class UserView(CustomPermissionMixin,APIView):
             return Response({"status": "Username Existed"}, status=status.HTTP_409_CONFLICT)
         except ObjectDoesNotExist:
             pass
-        
+
         password =self.generate_random_password()
         CustomUser.objects.create_user(
             username=data["username"],
@@ -192,17 +192,7 @@ class SingleUserView(CustomPermissionMixin,APIView):
             logging.warning(f"attempt patch user: Username Not Found {username}")
             return Response({"status": "Username Not Found"}, status=status.HTTP_404_NOT_FOUND)
        
-        if "password" in data and "validate_password" in data:
-            if data["password"] != data["validate_password"]:
-                logging.warning(f"attempt register: Password Validation Fail {username}")
-                return Response({"status": "Password Validation Fail"}, status=status.HTTP_406_NOT_ACCEPTABLE)
-            user.set_password(data["password"])
-        elif "password" not in data and "validate_password" not in data:
-            pass
-        else:
-            logging.warning(f"attempt register: Password Validation Fail {username}")
-            return Response({"status": "Password Validation Fail"}, status=status.HTTP_406_NOT_ACCEPTABLE)
-
+        
         if "email" in data:
             user.email = data["email"]
         user.is_staff = data["is_staff"]
