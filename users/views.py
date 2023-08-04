@@ -101,9 +101,7 @@ class UserView(CustomPermissionMixin,APIView):
             return Response({"status": "Username Existed"}, status=status.HTTP_409_CONFLICT)
         except ObjectDoesNotExist:
             pass
-        if data["password"] != data["validate_password"]:
-            logging.warning(f"attempt register: Password Validation Fail")
-            return Response({"status": "Password Validation Fail"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        
         password =self.generate_random_password()
         CustomUser.objects.create_user(
             username=data["username"],
