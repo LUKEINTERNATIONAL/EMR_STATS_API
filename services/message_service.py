@@ -68,7 +68,7 @@ class MessageService(CustomPermissionMixin,APIView):
         sms_arr =sms.process_sms_messages(facilities)
         sms.compose_sms_message(sms_arr,phone)
         message = EmailDetails().compose_email_message(facilities)
-        EmailDetails().send_email(email,message)
+        EmailDetails().send_email(email,message,'VPN Status Notifications')
 
     def send_admin_messages(self):
         query =''' SELECT * FROM users_customuser WHERE zone_id = 0 AND district_id = 0;'''

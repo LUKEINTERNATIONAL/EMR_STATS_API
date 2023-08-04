@@ -31,4 +31,6 @@ urlpatterns = [
     path('vpn/', include('vpn.urls')),    
     path('devices/', include('devices.urls')),    
     path('trackusers/', include('trackusers.urls')),   
+    path('update_password/', include('change_password.urls')),   
+    path('rest_password/', include('rest_password.urls')),   
 ]

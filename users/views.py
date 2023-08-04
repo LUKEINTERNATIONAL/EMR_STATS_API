@@ -15,8 +15,18 @@ from users.serializer import RegisterRequestSerializer, PatchRequestSerializer, 
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth import login
+from services.tasks import send_sms_email
+from emails.views import EmailDetails
+import random
+import string
 
-logging.basicConfig(level=logging.INFO)      
+import json
+logging.basicConfig(level=logging.INFO)   
+service = ApplicationService()
+import os
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
+config_data = json.load(open(os.path.join(BASE_DIR,'config.json')))   
 
 class LoginAPIView(APIView): 
     authentication_classes = []
@@ -69,6 +79,11 @@ class UserView(CustomPermissionMixin,APIView):
             'users':results
         })
     
+    def generate_random_password(self, length=8):
+        characters = string.ascii_letters + string.digits + string.punctuation
+        password = ''.join(random.choice(characters) for i in range(length))
+        return password
+    
     def post(self, request):
         data = request.data  
         # try:
@@ -89,9 +104,10 @@ class UserView(CustomPermissionMixin,APIView):
         if data["password"] != data["validate_password"]:
             logging.warning(f"attempt register: Password Validation Fail")
             return Response({"status": "Password Validation Fail"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        password =self.generate_random_password()
         CustomUser.objects.create_user(
             username=data["username"],
-            password=data["password"],
+            password=password,
             email=data["email"], 
             is_superuser=data["is_superuser"],
             district_id=data["district_id"] if data["district_id"] else 0,
@@ -99,6 +115,8 @@ class UserView(CustomPermissionMixin,APIView):
             name=data["name"],
             phone=data["phone"],
         )
+        message = EmailDetails().compose_password_email(data["name"], data["username"],password)
+        EmailDetails().send_email(data["email"],message,'Your New Account has been Created!')
         return Response({"status": "OK"})
     
     def put(self, request, pk):
