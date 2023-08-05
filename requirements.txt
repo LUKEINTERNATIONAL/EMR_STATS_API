@@ -44,3 +44,4 @@ ping3
 django-allauth
 django-sendfile
 flower
+gevent

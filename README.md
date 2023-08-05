@@ -65,6 +65,11 @@ sudo apt-get install rabbitmq-server
 
 # TO start flower 
 celery -A EMR_STATS_API flower
+# To delete all tasks 
+celery -A EMR_STATS_API purge
+
+# To start celery without celery deamon
+celery -A EMR_STATS_API worker -l INFO --pool=gevent --concurrency=100
 
 # debug postgres
 /usr/lib/postgresql/10/bin/postgres -d 3 -D /var/lib/postgresql/10/main -c config_file=/etc/postgresql/10/main/postgresql.conf
