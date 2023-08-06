@@ -68,14 +68,14 @@ celery -A EMR_STATS_API flower
 # To delete all tasks 
 celery -A EMR_STATS_API purge
 
-# To start celery without celery deamon
-celery -A EMR_STATS_API worker -l INFO --pool=gevent --concurrency=100 --queues=get_remote_data --hostname=get_remote_data-worker@%h >> /var/www/EMR_STATS_API/logs/celery_logs/get_remote_data.log 2>&1
+# To start celery without celery deamon but with cronjobs
+@reboot cd /var/www/EMR_STATS_API && env/bin/celery -A EMR_STATS_API worker -l INFO --pool=gevent --concurrency=100 --queues=get_remote_data --hostname=get_remote_data-worker@%h >> /var/www/EMR_STATS_API/logs/celery_logs/get_remote_data.log 2>&1
 
-celery -A EMR_STATS_API worker -l INFO --pool=gevent --concurrency=100 --queues=send_message --hostname=send_message-worker@%h >> /var/www/EMR_STATS_API/logs/celery_logs/send_message.log 2>&1
+@reboot cd /var/www/EMR_STATS_API && env/bin/celery -A EMR_STATS_API worker -l INFO --pool=gevent --concurrency=100 --queues=send_message --hostname=send_message-worker@%h >> /var/www/EMR_STATS_API/logs/celery_logs/send_message.log 2>&1
 
-celery -A EMR_STATS_API worker -l INFO --queues=get_devices --hostname=get_devices-worker@%h >> /var/www/EMR_STATS_API/logs/celery_logs/get_devices.log 2>&1
+@reboot cd /var/www/EMR_STATS_API && env/bin/celery -A EMR_STATS_API worker -l INFO --queues=get_devices --hostname=get_devices-worker@%h >> /var/www/EMR_STATS_API/logs/celery_logs/get_devices.log 2>&1
 
-celery -A EMR_STATS_API worker -l INFO --queues=copy_dumps --hostname=copy_dumps-worker@%h >> /var/www/EMR_STATS_API/logs/celery_logs/copy_dumps.log 2>&1
+@reboot cd /var/www/EMR_STATS_API && env/bin/celery -A EMR_STATS_API worker -l INFO --queues=copy_dumps --hostname=copy_dumps-worker@%h >> /var/www/EMR_STATS_API/logs/celery_logs/copy_dumps.log 2>&1
 
 
 # debug postgres
