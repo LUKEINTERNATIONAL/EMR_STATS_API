@@ -6,7 +6,7 @@ from django.forms.models import model_to_dict
 def make_dir(dirname):
     os.system("mkdir -p "+ dirname)
 
-@shared_task
+@shared_task(queue='copy_dumps')
 def copy_dumps_task(facility):
     try:
         print("Start copying from "+facility['facility_name'])

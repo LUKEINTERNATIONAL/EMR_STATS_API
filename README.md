@@ -69,7 +69,14 @@ celery -A EMR_STATS_API flower
 celery -A EMR_STATS_API purge
 
 # To start celery without celery deamon
-celery -A EMR_STATS_API worker -l INFO --pool=gevent --concurrency=100
+celery -A EMR_STATS_API worker -l INFO --pool=gevent --concurrency=100 --queues=get_remote_data --hostname=get_remote_data-worker@%h >> /var/www/EMR_STATS_API/logs/celery_logs/get_remote_data.log 2>&1
+
+celery -A EMR_STATS_API worker -l INFO --pool=gevent --concurrency=100 --queues=send_message --hostname=send_message-worker@%h >> /var/www/EMR_STATS_API/logs/celery_logs/send_message.log 2>&1
+
+celery -A EMR_STATS_API worker -l INFO --queues=get_devices --hostname=get_devices-worker@%h >> /var/www/EMR_STATS_API/logs/celery_logs/get_devices.log 2>&1
+
+celery -A EMR_STATS_API worker -l INFO --queues=copy_dumps --hostname=copy_dumps-worker@%h >> /var/www/EMR_STATS_API/logs/celery_logs/copy_dumps.log 2>&1
+
 
 # debug postgres
 /usr/lib/postgresql/10/bin/postgres -d 3 -D /var/lib/postgresql/10/main -c config_file=/etc/postgresql/10/main/postgresql.conf

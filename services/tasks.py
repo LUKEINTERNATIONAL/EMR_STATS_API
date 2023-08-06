@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 config_data = json.load(open(os.path.join(BASE_DIR,'config.json')))
 from celery import shared_task
 
-@shared_task
+@shared_task(queue='get_remote_data')
 def process_remote_data(facility_details):
     
     remote = RemoteOperations()
@@ -34,7 +34,7 @@ def process_remote_data(facility_details):
                     if(facility_details['viral_load']=='1'):
                         RemoteViralLoad().process_lab_orders(db_data,client,facility_id,remote)
                 if(facility_details['get_device_status']=='1' and facility_details['type_data'] =='remote_devices'):
-                    RemoteDevice().get_remote_device(client,facility_details,remote,facility_id)
+                    scan_remote_devices(client,facility_details,remote,facility_id)
             except yaml.YAMLError as exc:
                 print(exc)
             client.close()
@@ -45,7 +45,11 @@ def process_remote_data(facility_details):
         RemoteVNP().process_vpn(facility_details["id"],"inactive",response,[0,0])
         return False
 
-@shared_task   
+@shared_task(queue='get_devices')   
+def scan_remote_devices(client,facility_details,remote,facility_id):
+    RemoteDevice().get_remote_device(client,facility_details,remote,facility_id)
+
+@shared_task(queue='send_message')   
 def send_sms_email(_url,data,message_type):
     try:
         requests.post(url = str(_url), json = data)
