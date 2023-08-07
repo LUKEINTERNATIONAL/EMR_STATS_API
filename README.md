@@ -19,7 +19,7 @@ sudo apt install postgresql-10 postgresql-contrib-10
 # To create user and database
 sudo -u postgres psql
 create database mydb;
-create user myuser with encrypted password 'mypass';
+sudo -u postgres createuser root -P
 grant all privileges on database mydb to myuser;
 # migrations
 python manage.py makemigrations celery_results

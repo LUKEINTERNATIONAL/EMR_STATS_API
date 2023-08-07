@@ -24,6 +24,19 @@ config_data = json.load(open(os.path.join(BASE_DIR,'config.json')))
 # Create your views here.
 
 class EmailDetails(CustomPermissionMixin,APIView):
+
+    def footer(self):
+        return '''<footer style="padding: 20px 0;">
+                    <div style="margin: 0 auto;">
+                    <div style="display: flex; justify-content: center;">
+                        <ul style="list-style: none; margin: 0; padding: 0; display: flex; align-items: center;" class="logo-list">
+                        <li style="margin-right: 20px;"><img src="cid:mwpng@nodemailer.com" height="50"></li>
+                        <li style="margin-right: 20px;"><img src="cid:LIN@nodemailer.com" height="50"></li>
+                        <li><img src="cid:egpaf@nodemailer.com" height="50"></li>
+                        </ul>
+                    </div>
+                    </div>
+                </footer>'''
     
     def attachments(self):
         return [
@@ -70,70 +83,40 @@ class EmailDetails(CustomPermissionMixin,APIView):
                     {}
                 </li>
             </ol><div>
-            <footer style="position: absolute; bottom: 0; left: 0; right: 0;  background: gainsboro;  height: auto; width: auto; color: #fff; border-radius: 0px; margin-left: 0.5%; margin-top: 1%;">
-                <div style="display: flex;  align-items: center; justify-content: center; flex-direction: column; text-align: center;">
-                    
-                    <h3 style="font-size: 2.1rem; font-weight: 500; text-transform: capitalize; line-height: 3rem;">
-                    <!--left blank -->
-                    </h3>
-                    <div style="margin: 10px auto;">
-                        <img src="cid:mwpng@nodemailer.com"/>
-                    </div>
-                    <div style="margin: 10px auto;">
-                        <img src="cid:LIN@nodemailer.com"/>
-                    </div>
-                    <div style="margin: 10px auto;">
-                        <img src="cid:egpaf@nodemailer.com"/>
-                    </div>
-                </div>
-            </footer>
-        '''.format(datetime.today().strftime('%Y-%m-%d'),facilities)
+            {}
+        '''.format(datetime.today().strftime('%Y-%m-%d'),facilities,self.footer())
     
 
     def compose_password_email(self,name, username,password):
         return '''
-            Date: {},<br/><br/>
+            <b>Date:</b> {},<br/><br/>
 
-            Dear {},<br><br>
+            <b>Dear</b> {},<br><br>
 
             I hope this email finds you well. We are delighted to inform you that your account <br>
             has been successfully created in EMR Monitor System.<br><br>
 
-            Your login credentials are as follows:<br>
-            Username: {}<br>
-            Temporary Password: {}<br><br>
+            <b>Your login credentials are as follows </b><br>
+            Username:<b> {}<br> </b>
+            Temporary Password: <b> {} </b><br><br>
 
-            Note: For security purposes, we highly recommend that you change your password after your first login. <br>
+            <b>Note:</b> For security purposes, we highly recommend that you change your password after your first login. <br>
             To do this, simply follow the instructions on the login page and set a strong, unique password.<br><br>
  
             Should you encounter any issues or have any questions, <br>
-            please do not hesitate to reach out to our dedicated support team at kayangepetros@gmail.com/265999500312.<br><br>
+            please do not hesitate to reach out to our dedicated support team at <br>
+                 <b>Email:</b> kayangepetros@gmail.com<br>
+                 <b>Phone:</b> +265999500312.<br><br>
 
             To access your account, simply visit our website (http://10.44.0.86:4000/) and use the login credentials provided above.<br>
-            Make sure you are connected to VPN when visiting the website.<br><br>
+            <b>Note:</b> Make sure you are connected to VPN when visiting the website.<br><br>
 
             We look forward to serving you and providing a valuable experience.<br><br>
 
             Best regards,<br><br>
 
-            <footer style="position: absolute; bottom: 0; left: 0; right: 0;  background: gainsboro;  height: auto; width: auto; color: #fff; border-radius: 0px; margin-left: 0.5%; margin-top: 1%;">
-                <div style="display: flex;  align-items: center; justify-content: center; flex-direction: column; text-align: center;">
-                    
-                    <h3 style="font-size: 2.1rem; font-weight: 500; text-transform: capitalize; line-height: 3rem;">
-                    <!--left blank -->
-                    </h3>
-                    <div style="margin: 10px auto;">
-                        <img src="cid:mwpng@nodemailer.com"/>
-                    </div>
-                    <div style="margin: 10px auto;">
-                        <img src="cid:LIN@nodemailer.com"/>
-                    </div>
-                    <div style="margin: 10px auto;">
-                        <img src="cid:egpaf@nodemailer.com"/>
-                    </div>
-                </div>
-            </footer>
-        '''.format(datetime.today().strftime('%Y-%m-%d'),name,username,password)
+            {}
+        '''.format(datetime.today().strftime('%Y-%m-%d'),name,username,password,self.footer())
     
     
         
