@@ -51,13 +51,12 @@ class FacilitiesWithCoordinates(CustomPermissionMixin,APIView):
                         SUM(total_patients) as total_patients, 
                         SUM(total_encounters) as total_encounters 
             FROM facilities f 
-            INNER JOIN encounters e on f.id = e.facility_id 
             INNER JOIN vpn v on f.id = v.facility_id 
+            LEFT JOIN encounters e on f.id = e.facility_id AND encounter_date BETWEEN {} AND {}
             LEFT JOIN district d on f.district_id = d.id
             LEFT JOIN zone z on d.zone_id = z.id 
             WHERE latitude !='' AND longitude !='' 
-			AND date BETWEEN {} AND {} 
-			AND encounter_date BETWEEN {} AND {}  {}
+			AND date BETWEEN {} AND {} {}
             group by 
 			facility_name,
 			latitude,
