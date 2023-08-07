@@ -34,7 +34,7 @@ def process_remote_data(facility_details):
                     if(facility_details['viral_load']=='1'):
                         RemoteViralLoad().process_lab_orders(db_data,client,facility_id,remote)
                 if(facility_details['get_device_status']=='1' and facility_details['type_data'] =='remote_devices'):
-                    scan_remote_devices(client,facility_details,remote,facility_id)
+                    scan_remote_devices.delay(client,facility_details,remote,facility_id)
             except yaml.YAMLError as exc:
                 print(exc)
             client.close()
