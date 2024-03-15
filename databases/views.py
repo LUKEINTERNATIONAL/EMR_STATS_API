@@ -13,6 +13,7 @@ import subprocess
 import logging
 from facilities.models import Facility
 from databases.tasks import copy_dumps_task
+from databases.tasks import create_dump_task
 from django.forms.models import model_to_dict
 import subprocess
 from datetime import datetime
@@ -43,6 +44,17 @@ class FacilityDumps(CustomPermissionMixin,APIView):
                 'ip_address':facility.ip_address
             }
             copy_dumps_task.delay(facility_data)
+            
+    def create_dump(self):
+        facilities =Facility.objects.all()
+        for facility in facilities:
+            facility_data = {
+                'facility_name':facility.facility_name,
+                'password':facility.password,
+                'user_name':facility.user_name,
+                'ip_address':facility.ip_address
+            }
+            create_dump_task.delay(facility_data)
             
     def get_facility_dumps(self,path):
         try:

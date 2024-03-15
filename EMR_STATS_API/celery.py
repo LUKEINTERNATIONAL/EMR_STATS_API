@@ -23,6 +23,10 @@ app.conf.task_queues = {
         'exchange': 'copy_dumps',
         'routing_key': 'copy_dumps',
     },
+    'create_dump': {
+        'exchange': 'create_dump',
+        'routing_key': 'create_dump',
+    },
     'send_message': {
         'exchange': 'send_message',
         'routing_key': 'send_message',

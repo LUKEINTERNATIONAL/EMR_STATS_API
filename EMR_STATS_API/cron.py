@@ -33,6 +33,14 @@ def database_sync_job():
     else:
         print("==================== Can not copy dumps VPN is Down==================")
         return False
+    
+def remote_create_dump():
+    if remote.ping(config_data['vpn_ip']):
+        databaseDumps = FacilityDumps()
+        databaseDumps.create_dump()
+    else:
+        print("==================== Can not create dump VPN is Down==================")
+        return False
 
 def send_messages():
     if remote.ping(config_data['vpn_ip']):
