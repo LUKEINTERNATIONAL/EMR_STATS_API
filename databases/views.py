@@ -75,18 +75,17 @@ class FacilityDumps(CustomPermissionMixin,APIView):
             }
             remote = RemoteOperations()
             client = remote.connect(facility_details)
-            command = '~/Facilities_Backups/{}/Backups'.format(facility_details["facility_name"])
+            command = '~/Facilities_Backups/{}/remote_backups'.format(facility_details["facility_name"])
             dumps = self.get_facility_dumps(command)
             for dump in dumps:
                 dump_details =dump.split(' ')
                 if(dump_details[0]):
                     dump_name = dump_details[3]
                     try:
-                        remote_path = '/home/{}/backup/{}'.format(facility_details["user_name"],dump_name)
+                        remote_path = '/home/{}/remote_backups/{}'.format(facility_details["user_name"],dump_name)
                         remote_size = remote.get_remote_file_size(client,remote_path)
                     except:
-                        remote_path = '/home/{}/Backups/{}'.format(facility_details["user_name"],dump_name)
-                        remote_size = remote.get_remote_file_size(client,remote_path)
+                        print("fail to read size")
                         
                     local_size = os.path.getsize(command+'/'+dump_name)
                     result = remote_size - local_size
@@ -108,11 +107,11 @@ class FacilityDumps(CustomPermissionMixin,APIView):
         
         
     def get(self,request,facility_name):
-        command = os.path.expanduser("~")+'/Facilities_Backups/{}/Backups'.format(facility_name)
+        command = os.path.expanduser("~")+'/Facilities_Backups/{}/remote_backups'.format(facility_name)
         if os.path.exists(command) and os.path.isdir(command):
             pass
         else:
-            command = os.path.expanduser("~")+'/Facilities_Backups/{}/backup'.format(facility_name)
+            command = os.path.expanduser("~")+'/Facilities_Backups/{}/remote_backups'.format(facility_name)
         dumps = self.get_facility_dumps(command)
         dumps_filtered = []
         for dump in dumps:
