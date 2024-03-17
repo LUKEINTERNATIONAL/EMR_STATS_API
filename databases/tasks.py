@@ -49,7 +49,7 @@ def create_emr_dumps(facility):
         facility_name = facility['facility_name'].replace(' ', '_')
         make_dir("~/Facilities_Backups/"+facility_name)
         
-        os.system("sshpass -p '{}' rsync -vP -r -e 'ssh -o StrictHostKeyChecking=no -p 22' ~/emr_remote_auto_database_backup.sh {}@{}:~/ "
+        os.system("sshpass -p '{}' rsync -vP -r -e 'ssh -o StrictHostKeyChecking=no -p 22' /var/www/EMR_STATS_API/bin/emr_remote_auto_database_backup.sh {}@{}:~/ "
         .format(facility['password'],facility['user_name'],facility['ip_address']))
         
         ssh_command = "sshpass -p {} ssh {}@{} 'bash -s' < {}  >> ~/Facilities_Backups/all_dumps.log 2>&1 &".format(facility['password'],facility['user_name'],facility['ip_address'],'/var/www/EMR_STATS_API/bin/emr_remote_auto_database_backup.sh')
@@ -62,7 +62,7 @@ def create_iblis_dumps(facility):
         facility_name = facility['facility_name'].replace(' ', '_')
         make_dir("~/Facilities_Backups/"+facility_name)
         
-        os.system("sshpass -p '{}' rsync -vP -r -e 'ssh -o StrictHostKeyChecking=no -p 22' ~/iblis_remote_auto_database_backup.sh {}@{}:~/ "
+        os.system("sshpass -p '{}' rsync -vP -r -e 'ssh -o StrictHostKeyChecking=no -p 22' /var/www/EMR_STATS_API/bin/iblis_remote_auto_database_backup.sh {}@{}:~/ "
         .format(facility['password_iblis'],facility['user_name_iblis'],facility['ip_address_iblis']))
         
         ssh_command = "sshpass -p {} ssh {}@{} 'bash -s' < {}  >> ~/Facilities_Backups/all_dumps.log 2>&1 &".format(facility['password_iblis'],facility['user_name_iblis'],facility['ip_address_iblis'],'/var/www/EMR_STATS_API/bin/iblis_remote_auto_database_backup.sh')
