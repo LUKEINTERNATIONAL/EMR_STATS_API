@@ -62,6 +62,8 @@ if [ ! -d "$DIR" ]; then
    mkdir "$DIR"
 fi
 
+# Log file path
+log_file="$DIR/logfile.log"
 
 # Create backup file with current date
 backup_file="$DIR/$(date '+%A')_$default_database.sql.gz"
@@ -77,7 +79,9 @@ fi
 mysqldump -u"$default_username" -p"$default_password" -h"$default_host" --port="$default_port" --routines "$default_database" | gzip > "$backup_file"
 
 if [ $? -eq 0 ]; then
-    echo "executed successfully."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') $default_database - Backup executed successfully."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') $default_database - Backup executed successfully." >> "$log_file"
 else
-    echo "Check for errors."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') $default_database - Backup failed. Check for errors."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') $default_database - Backup failed. Check for errors." >> "$log_file"
 fi

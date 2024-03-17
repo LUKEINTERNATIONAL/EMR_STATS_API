@@ -41,7 +41,10 @@ class FacilityDumps(CustomPermissionMixin,APIView):
                 'facility_name':facility.facility_name,
                 'password':facility.password,
                 'user_name':facility.user_name,
-                'ip_address':facility.ip_address
+                'ip_address':facility.ip_address,
+                'user_name_iblis':facility.user_name_iblis,
+                'password_iblis':facility.password_iblis,
+                'ip_address_iblis':facility.ip_address_iblis
             }
             copy_dumps_task.delay(facility_data)
             
@@ -52,7 +55,10 @@ class FacilityDumps(CustomPermissionMixin,APIView):
                 'facility_name':facility.facility_name,
                 'password':facility.password,
                 'user_name':facility.user_name,
-                'ip_address':facility.ip_address
+                'ip_address':facility.ip_address,
+                'user_name_iblis':facility.user_name_iblis,
+                'password_iblis':facility.password_iblis,
+                'ip_address_iblis':facility.ip_address_iblis
             }
             create_dump_task.delay(facility_data)
             
