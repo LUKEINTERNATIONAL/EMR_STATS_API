@@ -65,14 +65,29 @@ fi
 # Log file path
 log_file="$DIR/logfile.log"
 
-# Create backup file with current date
-backup_file="$DIR/$(date '+%A')_$default_database.sql.gz"
-
-# Check if there are already 2 backup files, delete the oldest one if yes
-num_backups=$(ls -1 "$DIR"/*.sql.gz 2>/dev/null | wc -l)
-if [ "$num_backups" -ge 2 ]; then
-    oldest_backup=$(ls -t "$DIR"/*.sql.gz | tail -1)
-    rm "$oldest_backup"
+# Check if both emr_dump1.sql.gz and emr_dump2.sql.gz exist
+if [ -e "$DIR/emr_dump1.sql.gz" ] && [ -e "$DIR/emr_dump2.sql.gz" ]; then
+    # Determine which file is the oldest based on modification time
+    if [ "$DIR/emr_dump1.sql.gz" -ot "$DIR/emr_dump2.sql.gz" ]; then
+        oldest_file="$DIR/emr_dump1.sql.gz"
+    else
+        oldest_file="$DIR/emr_dump2.sql.gz"
+    fi
+    # Extract the file number from the oldest file name
+    oldest_file_number=$(echo "$oldest_file" | grep -oE '[0-9]+' | tail -1)
+    # Create a new file with the opposite number
+    if [ "$oldest_file_number" -eq 1 ]; then
+        backup_file="$DIR/emr_dump2.sql.gz"
+    else
+        backup_file="$DIR/emr_dump1.sql.gz"
+    fi
+else
+    # If one of the files doesn't exist, create the opposite file
+    if [ ! -e "$DIR/emr_dump1.sql.gz" ]; then
+        backup_file="$DIR/emr_dump1.sql.gz"
+    else
+        backup_file="$DIR/emr_dump2.sql.gz"
+    fi
 fi
 
 # Create backup and save it in the dir
