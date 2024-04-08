@@ -65,6 +65,16 @@ fi
 # Log file path
 log_file="$DIR/logfile.log"
 
+# Check if any backup file created today exists
+today=$(date '+%Y-%m-%d')
+backup_files_today=$(find "$DIR" -type f -name "*.sql.gz" -newermt "$today" ! -newermt "$today + 1 day")
+
+if [ -n "$backup_files_today" ]; then
+    echo "Backup for today already exists. Skipping backup process."
+    echo "$(date '+%Y-%m-%d %H:%M:%S') $default_database - Backup skipped. Backup for today already exists." >> "$log_file"
+    exit 0
+fi
+
 # Check if both iblis_dump1.sql.gz and iblis_dump2.sql.gz exist
 if [ -e "$DIR/iblis_dump1.sql.gz" ] && [ -e "$DIR/iblis_dump2.sql.gz" ]; then
     # Determine which file is the oldest based on modification time
